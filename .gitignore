@@ -2,6 +2,8 @@
 .mypy.ini
 .vscode/
 настройки.txt
+/foodgram/static/
+/foodgram/media/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -5,11 +5,13 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', default='django_secret_key:sadyhgf56r2kudvq;wuityropqtf7l')
+SECRET_KEY = os.getenv('SECRET_KEY', default='django_secret_key:sadyhgf56r2ku546оеityropqtf7l')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+CSRF_TRUSTED_ORIGINS = ['http://localhost','http://127.0.0.1']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,8 +20,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'api',
-    'user',
+    'rest_framework',
+    'user.apps.UserConfig',
+    'api.apps.ApiConfig',
 ]
 
 MIDDLEWARE = [
@@ -105,13 +108,13 @@ USE_L10N = True
 
 USE_TZ = True
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static/django/'
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static', 'django')
 
-MEDIA_URL = '/media/'
+MEDIA_URL = '/media/django/'
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media', 'django')
 
 UNUSED_USERNAME = 'me'
 

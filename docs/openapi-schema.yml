@@ -212,7 +212,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ValidationError'
         '401':
-          $ref: '#/components/schemas/AuthenticationError'
+          $ref: '#/components/responses/AuthenticationError'
         '404':
           $ref: '#/components/responses/NotFound'
       tags:
@@ -1202,7 +1202,6 @@ components:
 
   securitySchemes:
     Token:
-      description: 'Авторизация по токену. <br>
-      Все запросы от имени пользователя должны выполняться с заголовком "Authorization: Token TOKENVALUE"'
+      description: 'Авторизация по токену.<br>Все запросы от имени пользователя должны выполняться с заголовком "Authorization: Token TOKENVALUE"'
       type: http
       scheme: token

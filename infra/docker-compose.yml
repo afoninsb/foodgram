@@ -20,9 +20,11 @@ services:
     build:
       context: ../foodgram
       dockerfile: Dockerfile
-    restart: always
+    restart: unless-stopped
     volumes:
-      - media_value:/app/media/
+      - ../foodgram/:/backend/
+      - media_value:/backend/media/django/
+      - static_value:/backend/static/django/
     depends_on:
       - db
     env_file:
@@ -48,18 +50,20 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
+      - ../foodgram:/usr/share/nginx/html/backend/
       - ../docs/:/usr/share/nginx/html/api/docs/
-      - media_value:/var/html/media/
+      - media_value:/var/html/media/django/
+      - static_value:/var/html/static/django/
     depends_on:
       - web
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://127.0.0.1/admin"]
+      test: ["CMD", "curl", "--fail", "http://127.0.0.1/"]
       interval: 1m30s
       timeout: 10s
       retries: 3
       start_period: 40s
 
-
 volumes:
   media_value:
+  static_value:
   postgres_value:
