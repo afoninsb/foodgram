@@ -1,7 +1,8 @@
 from django.conf import settings
-from rest_framework import serializers
-from users.models import Subscription, User
 from djoser.serializers import UserCreateSerializer
+from rest_framework import serializers
+
+from users.models import Subscription, User
 
 
 class UserPostSerializer(UserCreateSerializer):
@@ -43,4 +44,3 @@ class UserGetSerializer(serializers.ModelSerializer):
             'last_name',
             'is_subscribed'
         )
-
