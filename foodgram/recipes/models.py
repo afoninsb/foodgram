@@ -1,55 +1,9 @@
-from django.core.validators import validate_slug, MinValueValidator
+from django.core.validators import MinValueValidator
 from django.db import models
 
+from ingredients.models import Ingredient
+from tags.models import Tag
 from users.models import User
-
-
-class Ingredient(models.Model):
-    """Модель ингредиентов."""
-
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=256
-    )
-    unit = models.CharField(
-        verbose_name='Единица измерения',
-        max_length=50
-    )
-
-    class Meta:
-        verbose_name = 'Ингредиент'
-        verbose_name_plural = 'Ингредиенты'
-        ordering = ('name',)
-
-    def __str__(self):
-        return f'{self.name} ({self.unit})'
-
-
-class Tag(models.Model):
-    """Модель тэгов."""
-
-    name = models.CharField(
-        verbose_name='Название',
-        max_length=200
-    )
-    slug = models.SlugField(
-        verbose_name='Слаг',
-        max_length=200,
-        unique=True,
-        validators=(validate_slug, )
-    )
-    color = models.CharField(
-        verbose_name='Цвет',
-        max_length=7
-    )
-
-    class Meta:
-        verbose_name = 'Тэг'
-        verbose_name_plural = 'Тэги'
-        ordering = ('name',)
-
-    def __str__(self):
-        return self.name
 
 
 class Recipe(models.Model):
@@ -78,7 +32,8 @@ class Recipe(models.Model):
     )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name='Время приготовления(мин)',
-        validators=(MinValueValidator(1, 'Должно быть целое число, большее 0'), )
+        validators=(
+            MinValueValidator(1, 'Должно быть целое число, большее 0'), )
     )
     img = models.CharField(
         verbose_name='Изображение',
@@ -146,6 +101,7 @@ class RecipeTags(models.Model):
                 name='recipe_tag'
             ),
         )
+
 
 class Favorites(models.Model):
     """Модель рецептов-фаворитов пользователей."""

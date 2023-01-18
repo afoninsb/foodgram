@@ -6,7 +6,7 @@ urlpatterns = [
     path('api/', include('users.urls')),
     # path('api/auth/', include('authuser.urls')),
     # path('api/recipes/', include('recipes.urls')),
-    # path('api/tags/', include('recipes.urls')),
-    # path('api/ingredients/', include('recipes.urls')),
+    path('api/tags/', include('tags.urls')),
+    path('api/ingredients/', include('ingredients.urls')),
     path("admin/", admin.site.urls),
 ]

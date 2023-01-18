@@ -1,27 +1,18 @@
-from rest_framework import mixins, status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from foodgram.classesviewset import CreateListRetrieveViewSet
 from users.models import User
 from users.pagination import UserPagination
 from users.serializers import UserGetSerializer, UserPostSerializer
-
-
-class CreateListRetrieveViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
-    pass
 
 
 class UsersViewSet(CreateListRetrieveViewSet):
     """Работа с информацией о пользователях."""
 
     queryset = User.objects.all()
-    search_fields = ('username',)
     lookup_field = 'id'
     pagination_class = UserPagination
 
@@ -34,9 +25,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def get_permissions(self):
         """Права доступа для GET запросов."""
 
-        if self.action in ('create', 'list'):
-            self.permission_classes = (AllowAny, )
-        elif self.action in ('retrieve', 'me', 'set_password'):
+        if self.action in ('retrieve', 'me', 'set_password'):
             self.permission_classes = (IsAuthenticated, )
         return super().get_permissions()
 

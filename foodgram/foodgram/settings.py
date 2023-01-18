@@ -4,7 +4,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY', default='django_secret_key:sadyhgf56r2ku546оеityropqtf7l')
+SECRET_KEY = os.getenv(
+    'SECRET_KEY', default='django_secret_key:sadyhgf56r2ku546оеityropqtf7l'
+)
 
 DEBUG = True
 
@@ -23,6 +25,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'djoser',
     'users.apps.UsersConfig',
+    'tags.apps.TagsConfig',
+    'ingredients.apps.IngredientsConfig',
     'recipes.apps.RecipesConfig',
 ]
 
@@ -89,11 +93,13 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 2,
 }
 
 DJOSER = {

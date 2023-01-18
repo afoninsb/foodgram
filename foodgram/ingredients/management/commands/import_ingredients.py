@@ -1,4 +1,4 @@
-import contextlib
+# import contextlib
 import csv
 import os
 
@@ -14,7 +14,7 @@ class Command(BaseCommand):
 
     # имя файла с данными, приложение, модель
     DATA = (
-        ('ingredients.csv', 'recipes', 'Ingredient'),
+        ('ingredients.csv', 'ingredients', 'Ingredient'),
     )
 
     def handle(self, *args, **kwargs):
