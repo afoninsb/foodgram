@@ -5,7 +5,7 @@ from rest_framework.response import Response
 
 from foodgram.classesviewset import CreateListRetrieveViewSet
 from users.models import User
-from users.pagination import UserPagination
+from foodgram.pagination import MyPagination
 from users.serializers import UserGetSerializer, UserPostSerializer
 
 
@@ -14,7 +14,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
     queryset = User.objects.all()
     lookup_field = 'id'
-    pagination_class = UserPagination
+    pagination_class = MyPagination
 
     def get_serializer_class(self):
         """Выбор серриализатора для чтения или записи."""

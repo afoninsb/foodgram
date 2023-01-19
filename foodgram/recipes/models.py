@@ -35,9 +35,8 @@ class Recipe(models.Model):
         validators=(
             MinValueValidator(1, 'Должно быть целое число, большее 0'), )
     )
-    img = models.CharField(
+    image = models.ImageField(
         verbose_name='Изображение',
-        max_length=200
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
@@ -67,6 +66,12 @@ class RecipeIngredients(models.Model):
         verbose_name='Ингредиент',
         on_delete=models.PROTECT,
         related_name='recipe_ingrdient'
+    )
+    amount = models.PositiveSmallIntegerField(
+        verbose_name='Количество',
+        validators=(
+            MinValueValidator(1, 'Должно быть целое число, большее 0'), ),
+        default=1
     )
 
     class Meta:

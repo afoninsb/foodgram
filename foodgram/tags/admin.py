@@ -13,4 +13,3 @@ class TagAdmin(admin.ModelAdmin):
         'color',
     )
     search_fields = ('name',)
-
