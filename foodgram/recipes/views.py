@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +10,7 @@ from recipes.permissions import IsAuthorOrAdmin
 from recipes.serializers import (
     RecipesGetSerializer, RecipesPostPatchSerializer
 )
+from tags.models import Tag
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -37,17 +39,24 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Recipe.objects.all()
-        models = {
-            'is_in_shopping_cart': ShoppingList,
-            'is_favorited': Favorites
-        }
-        user_id = self.request.user.id
-        for param, model in models.items():
-            if (self.request.GET.get(param)
-                    and self.request.GET.get(param) == '1'):
-                ids = list(model.objects.filter(user_id=user_id).
-                           values_list('recipe_id', flat=True))
-                queryset = queryset.filter(id__in=ids)
+        if self.request.GET:
+            models = {
+                'is_in_shopping_cart': ShoppingList,
+                'is_favorited': Favorites
+            }
+            user_id = self.request.user.id
+            for param, model in models.items():
+                if (self.request.GET.get(param)
+                        and self.request.GET.get(param) == '1'):
+                    ids = list(model.objects.filter(user_id=user_id).
+                               values_list('recipe_id', flat=True))
+                    queryset = queryset.filter(id__in=ids)
+            if self.request.GET.getlist('tags'):
+                for tag in self.request.GET.getlist('tags'):
+                    cur_tag = get_object_or_404(Tag, slug=tag)
+                    ids = list(RecipeTags.objects.filter(tag=cur_tag).
+                               values_list('recipe_id', flat=True))
+                    queryset = queryset.filter(id__in=ids)
         return queryset
 
     def perform_create(self, serializer):
