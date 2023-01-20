@@ -1,7 +1,6 @@
 import base64
 
 from django.core.files.base import ContentFile
-# from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from uuid import uuid1

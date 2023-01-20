@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from recipes.models import (
     Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
@@ -27,6 +27,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
             self.permission_classes = (IsAuthenticated, )
         elif self.action in ('partial_update', 'destroy'):
             self.permission_classes = (IsAuthorOrAdmin, )
+        else:
+            self.permission_classes = (AllowAny, )
         return super().get_permissions()
 
     def get_serializer_class(self):
