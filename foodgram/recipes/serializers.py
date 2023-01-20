@@ -28,6 +28,7 @@ class RecipesSerializer(serializers.ModelSerializer):
     ingredients = IngredientSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     author = UserGetSerializer(read_only=True)
+    image = serializers.CharField(source="image.url")
 
     class Meta:
         model = Recipe
