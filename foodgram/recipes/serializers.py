@@ -84,6 +84,10 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     recipe = FavoriteRecipeSerializer(read_only=True)
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return ret['recipe']
+
     class Meta:
         model = Favorites
         fields = ('recipe', )

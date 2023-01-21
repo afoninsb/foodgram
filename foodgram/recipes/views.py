@@ -1,11 +1,12 @@
 from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
+from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from foodgram.classesviewset import CreateDestroyViewSet
 from recipes.models import (
     Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
 )
@@ -89,27 +90,39 @@ class RecipesViewSet(viewsets.ModelViewSet):
         RecipeTags.objects.bulk_create(bulk_data)
 
 
-class FavoriteViewSet(CreateDestroyViewSet):
-    """Добавление / удаление избранного."""
+@api_view(('POST', 'DELETE'))
+def Favorite(request, recipe_id):
+    """Добавление рецепта в Избранное и удаление из Избранного. """
 
-    serializer_class = FavoriteSerializer
-    permission_classes = (IsAuthenticated, )
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            try:
-                serializer.save(
-                    user=self.request.user,
-                    recipe_id=self.kwargs['recipe_id']
-                )
-            except IntegrityError:
-                return Response(
-                    serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                headers = self.get_success_headers(serializer.data)
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED,
-                    headers=headers
-                )
+    if request.method == 'POST':
+        serializer = FavoriteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save(
+                user=request.user,
+                recipe_id=recipe_id
+            )
+        except IntegrityError:
+            return Response(
+                'Рецепт уже в Избранном',
+                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED,
+            )
+    try:
+        obj = get_object_or_404(
+            Favorites,
+            user=request.user,
+            recipe_id=recipe_id
+        )
+    except Exception:
+        return Response(
+            'Нет такого рецепта',
+            status=status.HTTP_400_BAD_REQUEST)
+    else:
+        obj.delete()
+        return Response(
+            'Рецепт удален из Избранного',
+            status=status.HTTP_204_NO_CONTENT)
