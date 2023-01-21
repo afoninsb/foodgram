@@ -4,7 +4,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from foodgram.classesviewset import CreateListRetrieveViewSet
+from foodgram.classesviewset import CreateListRetrieveViewSet, ListViewSet
 from users.models import Subscription, User
 from foodgram.pagination import MyPagination
 from users.serializers import SubscriptionsListSerializer, UserGetSerializer, UserPostSerializer
@@ -74,10 +74,9 @@ class UsersViewSet(CreateListRetrieveViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GetSubscriptionsViewSet(
-        mixins.ListModelMixin,
-        viewsets.GenericViewSet
-):
+class GetSubscriptionsViewSet(ListViewSet):
+    """Работа с информацией о подписках пользователя."""
+
     serializer_class = SubscriptionsListSerializer
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthenticated, )

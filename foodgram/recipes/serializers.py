@@ -5,7 +5,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.fields import SerializerMethodField
 from uuid import uuid1
-from foodgram.FavoriteRecipeSerializer import FavoriteRecipeSerializer
+from foodgram.favoriterecipeserializer import FavoriteRecipeSerializer
 from users.serializers import UserGetSerializer
 
 from tags.serializers import TagSerializer
