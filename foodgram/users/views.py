@@ -1,13 +1,15 @@
-from rest_framework import mixins, status, viewsets
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from foodgram.classesviewset import CreateListRetrieveViewSet, ListViewSet
-from users.models import Subscription, User
 from foodgram.pagination import MyPagination
-from users.serializers import SubscriptionsListSerializer, UserGetSerializer, UserPostSerializer
+from users.models import Subscription, User
+from users.serializers import (
+    SubscriptionsListSerializer, UserGetSerializer, UserPostSerializer
+)
 
 
 class UsersViewSet(CreateListRetrieveViewSet):
@@ -20,10 +22,8 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def get_serializer_class(self):
         """Выбор сериализатора для чтения или записи."""
 
-        if self.action == 'create':
-            return UserPostSerializer
-        else:
-            return UserGetSerializer
+        return (UserPostSerializer if self.action == 'create'
+                else UserGetSerializer)
 
     def get_permissions(self):
         """Права доступа для GET запросов."""

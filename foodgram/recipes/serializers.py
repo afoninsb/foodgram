@@ -2,15 +2,14 @@ import base64
 
 from django.core.files.base import ContentFile
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.fields import SerializerMethodField
 from uuid import uuid1
-from foodgram.favoriterecipeserializer import FavoriteRecipeSerializer
-from users.serializers import UserGetSerializer
 
-from tags.serializers import TagSerializer
 from ingredients.serializers import IngredientSerializer
+from foodgram.generic_serializer import FavoriteRecipeSerializer
 from recipes.models import Favorites, Recipe, ShoppingList
+from tags.serializers import TagSerializer
+from users.serializers import UserGetSerializer
 
 
 class Base64ImageField(serializers.ImageField):

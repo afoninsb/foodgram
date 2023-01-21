@@ -1,8 +1,8 @@
 from django.conf import settings
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
-from foodgram.favoriterecipeserializer import FavoriteRecipeSerializer
 
+from foodgram.generic_serializer import FavoriteRecipeSerializer
 from users.models import Subscription, User
 
 

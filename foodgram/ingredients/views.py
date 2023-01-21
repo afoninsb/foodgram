@@ -2,8 +2,8 @@ from rest_framework import filters
 from rest_framework.permissions import AllowAny
 
 from foodgram.classesviewset import ListRetrieveViewSet
-from ingredients.serializers import IngredientSerializer
 from ingredients.models import Ingredient
+from ingredients.serializers import IngredientSerializer
 
 
 class IngredientsViewSet(ListRetrieveViewSet):

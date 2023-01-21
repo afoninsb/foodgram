@@ -1,8 +1,8 @@
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework import viewsets
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -14,7 +14,6 @@ from recipes.permissions import IsAuthorOrAdmin
 from recipes.serializers import (
     FavoriteSerializer, RecipesGetSerializer, RecipesPostPatchSerializer
 )
-from tags.models import Tag
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
