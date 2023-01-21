@@ -5,8 +5,9 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.fields import SerializerMethodField
 from uuid import uuid1
-
+from foodgram.FavoriteRecipeSerializer import FavoriteRecipeSerializer
 from users.serializers import UserGetSerializer
+
 from tags.serializers import TagSerializer
 from ingredients.serializers import IngredientSerializer
 from recipes.models import Favorites, Recipe, ShoppingList
@@ -65,18 +66,6 @@ class RecipesGetSerializer(RecipesSerializer):
     is_favorited = SerializerMethodField(method_name="is_in_favorites")
     is_in_shopping_cart = SerializerMethodField(
         method_name="is_in_shopping_list")
-
-
-class FavoriteRecipeSerializer(serializers.ModelSerializer):
-    """Сериализатор модели Recipes для вывода в Избранное."""
-
-    name = serializers.CharField(read_only=True)
-    image = serializers.CharField(source="image.url", read_only=True)
-    cooking_time = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = Recipe
-        fields = ("id", "name", "image", "cooking_time")
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

@@ -1,12 +1,13 @@
-from rest_framework import status
+from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from foodgram.classesviewset import CreateListRetrieveViewSet
-from users.models import User
+from users.models import Subscription, User
 from foodgram.pagination import MyPagination
-from users.serializers import UserGetSerializer, UserPostSerializer
+from users.serializers import SubscriptionsListSerializer, UserGetSerializer, UserPostSerializer
 
 
 class UsersViewSet(CreateListRetrieveViewSet):
@@ -17,10 +18,12 @@ class UsersViewSet(CreateListRetrieveViewSet):
     pagination_class = MyPagination
 
     def get_serializer_class(self):
-        """Выбор серриализатора для чтения или записи."""
+        """Выбор сериализатора для чтения или записи."""
 
-        return (UserPostSerializer
-                if self.action == 'create' else UserGetSerializer)
+        if self.action == 'create':
+            return UserPostSerializer
+        else:
+            return UserGetSerializer
 
     def get_permissions(self):
         """Права доступа для GET запросов."""
@@ -69,3 +72,18 @@ class UsersViewSet(CreateListRetrieveViewSet):
             self.request.user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetSubscriptionsViewSet(
+        mixins.ListModelMixin,
+        viewsets.GenericViewSet
+):
+    serializer_class = SubscriptionsListSerializer
+    pagination_class = LimitOffsetPagination
+    permission_classes = (IsAuthenticated, )
+
+    def get_queryset(self):
+        return Subscription.objects.filter(subscriber=self.request.user)
+
+    # def perform_create(self, serializer):
+    #     serializer.save(user=self.request.user)

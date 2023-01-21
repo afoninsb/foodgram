@@ -1,6 +1,7 @@
 from django.conf import settings
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
+from foodgram.FavoriteRecipeSerializer import FavoriteRecipeSerializer
 
 from users.models import Subscription, User
 
@@ -44,3 +45,46 @@ class UserGetSerializer(serializers.ModelSerializer):
             'last_name',
             'is_subscribed'
         )
+
+
+class UserGetSubSerializer(UserGetSerializer):
+    """GET Сериализатор модели User для страницы подписок."""
+
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    def get_recipes_count(self, obj):
+        return obj.recipe.all().count()
+
+    def get_recipes(self, obj):
+        recipies = obj.recipe.all()
+        if self.context.get('request').GET['recipes_count']:
+            count = int(self.context.get('request').GET['recipes_count'])
+            recipies = recipies[:count]
+        return FavoriteRecipeSerializer(recipies, many=True).data
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
+
+
+class SubscriptionsListSerializer(serializers.ModelSerializer):
+
+    author = UserGetSubSerializer(read_only=True)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return ret['author']
+
+    class Meta:
+        model = Subscription
+        fields = ('author', )

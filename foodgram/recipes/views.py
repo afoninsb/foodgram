@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
@@ -91,6 +91,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
 
 @api_view(('POST', 'DELETE'))
+@permission_classes((IsAuthenticated, ))
 def Favorite(request, recipe_id):
     """Добавление рецепта в Избранное и удаление из Избранного. """
 
