@@ -1,14 +1,17 @@
-from django.shortcuts import get_object_or_404
+from django.db import IntegrityError
+from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
+from foodgram.classesviewset import CreateDestroyViewSet
 from recipes.models import (
     Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
 )
 from recipes.permissions import IsAuthorOrAdmin
 from recipes.serializers import (
-    RecipesGetSerializer, RecipesPostPatchSerializer
+    FavoriteSerializer, RecipesGetSerializer, RecipesPostPatchSerializer
 )
 from tags.models import Tag
 
@@ -55,8 +58,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     queryset = queryset.filter(id__in=ids)
             if self.request.GET.getlist('tags'):
                 for tag in self.request.GET.getlist('tags'):
-                    cur_tag = get_object_or_404(Tag, slug=tag)
-                    ids = list(RecipeTags.objects.filter(tag=cur_tag).
+                    # cur_tag = get_object_or_404(Tag, slug=tag)
+                    ids = list(RecipeTags.objects.filter(tag_id=tag).
                                values_list('recipe_id', flat=True))
                     queryset = queryset.filter(id__in=ids)
         return queryset
@@ -84,3 +87,29 @@ class RecipesViewSet(viewsets.ModelViewSet):
             for tag in self.request.data['tags']
         ]
         RecipeTags.objects.bulk_create(bulk_data)
+
+
+class FavoriteViewSet(CreateDestroyViewSet):
+    """Добавление / удаление избранного."""
+
+    serializer_class = FavoriteSerializer
+    permission_classes = (IsAuthenticated, )
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            try:
+                serializer.save(
+                    user=self.request.user,
+                    recipe_id=self.kwargs['recipe_id']
+                )
+            except IntegrityError:
+                return Response(
+                    serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                headers = self.get_success_headers(serializer.data)
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED,
+                    headers=headers
+                )

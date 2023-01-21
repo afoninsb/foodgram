@@ -1,4 +1,5 @@
 from rest_framework import filters
+from rest_framework.permissions import AllowAny
 
 from foodgram.classesviewset import ListRetrieveViewSet
 from ingredients.serializers import IngredientSerializer
@@ -13,3 +14,4 @@ class IngredientsViewSet(ListRetrieveViewSet):
     lookup_field = 'id'
     filter_backends = [filters.SearchFilter]
     search_fields = ('^name',)
+    permission_classes = (AllowAny, )

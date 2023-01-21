@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from foodgram.classesviewset import CreateListRetrieveViewSet
@@ -27,6 +27,8 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
         if self.action in ('retrieve', 'me', 'set_password'):
             self.permission_classes = (IsAuthenticated, )
+        else:
+            self.permission_classes = (AllowAny, )
         return super().get_permissions()
 
     def create(self, request, *args, **kwargs):
