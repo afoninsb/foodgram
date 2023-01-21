@@ -58,8 +58,8 @@ class UserGetSubSerializer(UserGetSerializer):
 
     def get_recipes(self, obj):
         recipies = obj.recipe.all()
-        if self.context.get('request').GET['recipes_count']:
-            count = int(self.context.get('request').GET['recipes_count'])
+        if self.context.get('request').GET['recipes_limit']:
+            count = int(self.context.get('request').GET['recipes_limit'])
             recipies = recipies[:count]
         return FavoriteRecipeSerializer(recipies, many=True).data
 
