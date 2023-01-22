@@ -65,17 +65,3 @@ class RecipesGetSerializer(RecipesSerializer):
     is_favorited = SerializerMethodField(method_name="is_in_favorites")
     is_in_shopping_cart = SerializerMethodField(
         method_name="is_in_shopping_list")
-
-
-class FavoriteSerializer(serializers.ModelSerializer):
-    """Сериализатор модели Favorites."""
-
-    recipe = FavoriteRecipeSerializer(read_only=True)
-
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        return ret['recipe']
-
-    class Meta:
-        model = Favorites
-        fields = ('recipe', )

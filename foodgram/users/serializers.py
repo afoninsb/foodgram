@@ -33,9 +33,9 @@ class UserGetSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(read_only=True)
 
     def get_is_subscribed(self, obj):
-        subscriber = self.context.get('request').user
+        subscriber = self.context.get('request').user.id
         return Subscription.objects.filter(
-            subscriber=subscriber,
+            subscriber_id=subscriber,
             author=obj,
         ).exists()
 

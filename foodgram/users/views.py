@@ -25,10 +25,14 @@ class UsersViewSet(CreateListRetrieveViewSet):
     pagination_class = MyPagination
 
     def get_serializer_class(self):
-        """Выбор сериализатора для чтения или записи."""
+        """Выбор сериализатора."""
 
-        return (UserPostSerializer if self.action == 'create'
-                else UserGetSerializer)
+        if self.action == 'create':
+            return UserPostSerializer
+        elif self.action == 'subscribe':
+            return UserGetSubSerializer
+        else:
+            return UserGetSerializer
 
     def get_permissions(self):
         """Права доступа для GET запросов."""
@@ -45,11 +49,9 @@ class UsersViewSet(CreateListRetrieveViewSet):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             self.perform_create(serializer)
-            headers = self.get_success_headers(serializer.data)
             return Response(
                 serializer.data,
                 status=status.HTTP_201_CREATED,
-                headers=headers
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -94,7 +96,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
                     'Вы уже подписаны на этого пользователя',
                     status=status.HTTP_400_BAD_REQUEST)
             else:
-                serializer = UserGetSubSerializer(
+                serializer = self.get_serializer(
                     author,
                     data=request.data,
                     context={'request': request}

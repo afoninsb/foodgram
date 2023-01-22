@@ -2,17 +2,18 @@ from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework import viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from foodgram.generic_serializer import FavoriteRecipeSerializer
 
 from recipes.models import (
     Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
 )
 from recipes.permissions import IsAuthorOrAdmin
 from recipes.serializers import (
-    FavoriteSerializer, RecipesGetSerializer, RecipesPostPatchSerializer
+    RecipesGetSerializer, RecipesPostPatchSerializer
 )
 
 
@@ -20,7 +21,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
     """Работа с информацией о рецептах."""
 
     lookup_field = 'id'
-    permission_classes = (IsAuthenticated, )
     pagination_class = LimitOffsetPagination
 
     def get_permissions(self):
@@ -41,6 +41,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipesPostPatchSerializer
         elif self.action in ('retrieve', 'list'):
             return RecipesGetSerializer
+        elif self.action == 'favorite':
+            return FavoriteRecipeSerializer
 
     def get_queryset(self):
         queryset = Recipe.objects.all()
@@ -87,41 +89,42 @@ class RecipesViewSet(viewsets.ModelViewSet):
         ]
         RecipeTags.objects.bulk_create(bulk_data)
 
+    @action(detail=True, methods=('POST', 'DELETE'), url_path='favorite')
+    def favorite(self, request, **kwargs):
+        """Action subscribe - подписка и отмена подписки."""
 
-@api_view(('POST', 'DELETE'))
-@permission_classes((IsAuthenticated, ))
-def Favorite(request, recipe_id):
-    """Добавление рецепта в Избранное и удаление из Избранного. """
-
-    if request.method == 'POST':
-        serializer = FavoriteSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        user = request.user
+        recipe = get_object_or_404(Recipe, id=self.kwargs.get('id'))
+        if request.method == 'POST':
+            try:
+                Favorites.objects.create(
+                    user=user,
+                    recipe=recipe
+                )
+            except IntegrityError:
+                return Response(
+                    'Этот рецепт уже в Избранном',
+                    status=status.HTTP_400_BAD_REQUEST)
+            else:
+                serializer = FavoriteRecipeSerializer(
+                    recipe,
+                    data=request.data,
+                )
+                serializer.is_valid(raise_exception=True)
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED,
+                )
         try:
-            serializer.save(
-                user=request.user,
-                recipe_id=recipe_id
-            )
-        except IntegrityError:
+            obj = get_object_or_404(Favorites, user=user, recipe=recipe)
+        except Exception:
             return Response(
-                'Рецепт уже в Избранном',
-                status=status.HTTP_400_BAD_REQUEST)
+                'Этого рецепта нет в Избранном',
+                status=status.HTTP_400_BAD_REQUEST
+            )
         else:
+            obj.delete()
             return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED,
+                'Вы удалили рецепт из Избранного',
+                status=status.HTTP_204_NO_CONTENT
             )
-    try:
-        obj = get_object_or_404(
-            Favorites,
-            user=request.user,
-            recipe_id=recipe_id
-        )
-    except Exception:
-        return Response(
-            'Нет такого рецепта',
-            status=status.HTTP_400_BAD_REQUEST)
-    else:
-        obj.delete()
-        return Response(
-            'Рецепт удален из Избранного',
-            status=status.HTTP_204_NO_CONTENT)
