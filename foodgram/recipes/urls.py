@@ -5,16 +5,9 @@ from recipes.views import Favorite, RecipesViewSet
 
 router = SimpleRouter()
 
-# router.register(
-#     r'(?P<recipe_id>\d+)/favorite/<int:pk>', FavoriteDeleteViewSet, basename='dfavorite',
-# )
-# router.register(
-#     r'(?P<recipe_id>\d+)/favorite', Favorite, basename='cfavorite'
-# )
-
 router.register('', RecipesViewSet, basename='recipes')
 
 urlpatterns = [
+    path('<int:recipe_id>/favorite/', Favorite, name='favorite'),
     path('', include(router.urls)),
-    path('<int:recipe_id>/favorite/', Favorite, name='favorite')
 ]

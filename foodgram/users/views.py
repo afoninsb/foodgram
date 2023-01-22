@@ -1,3 +1,5 @@
+from django.db import IntegrityError
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
@@ -8,7 +10,10 @@ from foodgram.classesviewset import CreateListRetrieveViewSet, ListViewSet
 from foodgram.pagination import MyPagination
 from users.models import Subscription, User
 from users.serializers import (
-    SubscriptionsListSerializer, UserGetSerializer, UserPostSerializer
+    SubscriptionsListSerializer,
+    UserGetSerializer,
+    UserGetSubSerializer,
+    UserPostSerializer
 )
 
 
@@ -28,7 +33,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def get_permissions(self):
         """Права доступа для GET запросов."""
 
-        if self.action in ('retrieve', 'me', 'set_password'):
+        if self.action in ('retrieve', 'me', 'set_password', 'subscribe'):
             self.permission_classes = (IsAuthenticated, )
         else:
             self.permission_classes = (AllowAny, )
@@ -48,7 +53,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=('get',), url_path='me')
+    @action(detail=False, methods=('GET',), url_path='me')
     def me(self, request):
         """Action me - информация юзера о себе."""
 
@@ -56,12 +61,11 @@ class UsersViewSet(CreateListRetrieveViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    @action(detail=False, methods=('post',), url_path='set_password')
+    @action(detail=False, methods=('POST',), url_path='set_password')
     def set_password(self, request):
         """Action set_password - изменение пароля юзера."""
 
         instance = request.user
-        print(request.data)
         serializer = self.get_serializer(
             instance,
             request.data,
@@ -73,16 +77,56 @@ class UsersViewSet(CreateListRetrieveViewSet):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=True, methods=('POST', 'DELETE'), url_path='subscribe')
+    def subscribe(self, request, **kwargs):
+        """Action subscribe - подписка и отмена подписки."""
+
+        subscriber = request.user
+        author = get_object_or_404(User, id=self.kwargs.get('id'))
+        if request.method == 'POST':
+            try:
+                Subscription.objects.create(
+                    subscriber=subscriber,
+                    author=author
+                )
+            except IntegrityError:
+                return Response(
+                    'Вы уже подписаны на этого пользователя',
+                    status=status.HTTP_400_BAD_REQUEST)
+            else:
+                serializer = UserGetSubSerializer(
+                    author,
+                    data=request.data,
+                    context={'request': request}
+                )
+                serializer.is_valid(raise_exception=True)
+                return Response(
+                    serializer.data,
+                    status=status.HTTP_201_CREATED,
+                )
+        try:
+            obj = get_object_or_404(
+                Subscription,
+                subscriber=subscriber,
+                author=author
+            )
+        except Exception:
+            return Response(
+                'Вы не подписаны на этого пользователя',
+                status=status.HTTP_400_BAD_REQUEST)
+        else:
+            obj.delete()
+            return Response(
+                'Вы отписались от этого пользователя',
+                status=status.HTTP_204_NO_CONTENT)
+
 
 class GetSubscriptionsViewSet(ListViewSet):
     """Работа с информацией о подписках пользователя."""
 
     serializer_class = SubscriptionsListSerializer
-    pagination_class = LimitOffsetPagination
     permission_classes = (IsAuthenticated, )
+    pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
         return Subscription.objects.filter(subscriber=self.request.user)
-
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)

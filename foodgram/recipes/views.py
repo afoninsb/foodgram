@@ -58,7 +58,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     queryset = queryset.filter(id__in=ids)
             if self.request.GET.getlist('tags'):
                 for tag in self.request.GET.getlist('tags'):
-                    # cur_tag = get_object_or_404(Tag, slug=tag)
                     ids = list(RecipeTags.objects.filter(tag_id=tag).
                                values_list('recipe_id', flat=True))
                     queryset = queryset.filter(id__in=ids)

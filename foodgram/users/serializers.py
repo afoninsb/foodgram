@@ -27,12 +27,16 @@ class UserGetSerializer(serializers.ModelSerializer):
     """GET Сериализатор модели User."""
 
     is_subscribed = serializers.SerializerMethodField()
+    email = serializers.CharField(read_only=True)
+    username = serializers.CharField(read_only=True)
+    first_name = serializers.CharField(read_only=True)
+    last_name = serializers.CharField(read_only=True)
 
     def get_is_subscribed(self, obj):
-        request_user = self.context.get('request').user.id
+        subscriber = self.context.get('request').user
         return Subscription.objects.filter(
-            subscriber=request_user,
-            author=obj.id,
+            subscriber=subscriber,
+            author=obj,
         ).exists()
 
     class Meta:
@@ -54,9 +58,11 @@ class UserGetSubSerializer(UserGetSerializer):
     recipes_count = serializers.SerializerMethodField()
 
     def get_recipes_count(self, obj):
-        return obj.recipe.all().count()
+        author = obj if self.context.get('request') else obj['author']
+        return author.recipe.all().count()
 
     def get_recipes(self, obj):
+
         recipies = obj.recipe.all()
         if self.context.get('request').GET['recipes_limit']:
             count = int(self.context.get('request').GET['recipes_limit'])

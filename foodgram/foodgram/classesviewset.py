@@ -23,3 +23,10 @@ class ListViewSet(
     viewsets.GenericViewSet
 ):
     pass
+
+
+class CreateViewSet(
+    mixins.CreateModelMixin,
+    viewsets.GenericViewSet
+):
+    pass
