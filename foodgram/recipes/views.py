@@ -1,10 +1,7 @@
-import io
-import tempfile
-
 from django.db import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
-from django.template.loader import get_template, render_to_string
+from django.template.loader import render_to_string
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -12,7 +9,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from foodgram.generic_serializer import FavoriteRecipeSerializer
-from weasyprint import HTML, CSS
+from weasyprint import HTML
 
 from recipes.models import (
     Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
