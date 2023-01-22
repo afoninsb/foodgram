@@ -1,5 +1,10 @@
+import io
+import tempfile
+
 from django.db import IntegrityError
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django.template.loader import get_template, render_to_string
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -7,6 +12,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from foodgram.generic_serializer import FavoriteRecipeSerializer
+from weasyprint import HTML, CSS
 
 from recipes.models import (
     Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
@@ -41,7 +47,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipesPostPatchSerializer
         elif self.action in ('retrieve', 'list'):
             return RecipesGetSerializer
-        elif self.action == 'favorite':
+        elif self.action in ['favorite', 'shopping_cart']:
             return FavoriteRecipeSerializer
 
     def get_queryset(self):
@@ -91,22 +97,56 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=('POST', 'DELETE'), url_path='favorite')
     def favorite(self, request, **kwargs):
-        """Action subscribe - подписка и отмена подписки."""
+        """Добавление в Избранное и удаление из Избранного."""
 
+        return self.user_lists(request, Favorites)
+
+    @action(detail=True, methods=('POST', 'DELETE'), url_path='shopping_cart')
+    def shopping_cart(self, request, **kwargs):
+        """Добавление в список покупок и удаление из него."""
+
+        return self.user_lists(request, ShoppingList)
+
+    @action(detail=False, methods=('GET', ), url_path='download_shopping_cart')
+    def download_shopping_cart(self, request, **kwargs):
+        """Получение документа сос писком ингредиентов для покупки."""
+
+        user = request.user
+        spisok = ShoppingList.objects.filter(user=user)
+        download = {}
+        for obj in spisok:
+            ingredients = RecipeIngredients.objects.\
+                filter(recipe=obj.recipe).select_related('ingredient')
+            for ingredient in ingredients:
+                obj = ingredient.ingredient
+                if obj.name in download:
+                    download[obj.name][0] += ingredient.amount
+                else:
+                    download[obj.name] = (
+                        [ingredient.amount, obj.measurement_unit]
+                    )
+        html_template = render_to_string(
+            'shopping_cart.html', {'download': download})
+        pdf_file = HTML(string=html_template).write_pdf()
+        response = HttpResponse(pdf_file, content_type='application/pdf')
+        response['Content-Disposition'] = 'filename="shopping_cart.pdf"'
+        return response
+
+    def user_lists(self, request, model):
         user = request.user
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('id'))
         if request.method == 'POST':
             try:
-                Favorites.objects.create(
+                model.objects.create(
                     user=user,
                     recipe=recipe
                 )
             except IntegrityError:
                 return Response(
-                    'Этот рецепт уже в Избранном',
+                    'Этот рецепт уже в списке',
                     status=status.HTTP_400_BAD_REQUEST)
             else:
-                serializer = FavoriteRecipeSerializer(
+                serializer = self.get_serializer(
                     recipe,
                     data=request.data,
                 )
@@ -116,15 +156,15 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_201_CREATED,
                 )
         try:
-            obj = get_object_or_404(Favorites, user=user, recipe=recipe)
+            obj = get_object_or_404(model, user=user, recipe=recipe)
         except Exception:
             return Response(
-                'Этого рецепта нет в Избранном',
+                'Этого рецепта нет в списке',
                 status=status.HTTP_400_BAD_REQUEST
             )
         else:
             obj.delete()
             return Response(
-                'Вы удалили рецепт из Избранного',
+                'Вы удалили рецепт из списка',
                 status=status.HTTP_204_NO_CONTENT
             )

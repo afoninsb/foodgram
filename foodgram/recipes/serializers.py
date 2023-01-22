@@ -7,7 +7,7 @@ from uuid import uuid1
 
 from ingredients.serializers import IngredientSerializer
 from foodgram.generic_serializer import FavoriteRecipeSerializer
-from recipes.models import Favorites, Recipe, ShoppingList
+from recipes.models import Favorites, Recipe, RecipeIngredients, ShoppingList
 from tags.serializers import TagSerializer
 from users.serializers import UserGetSerializer
 
@@ -62,6 +62,30 @@ class RecipesGetSerializer(RecipesSerializer):
         except Exception:
             return False
 
+    def get_ingredients(self, instance):
+        ingredients = RecipeIngredients.objects.\
+            filter(recipe=instance).select_related('ingredient')
+        return [
+            {
+                'id': ingredient.ingredient.id,
+                'name': ingredient.ingredient.name,
+                'measurement_unit': ingredient.ingredient.measurement_unit,
+                'amount': ingredient.amount,
+            }
+            for ingredient in ingredients
+        ]
+
+    ingredients = SerializerMethodField(method_name="get_ingredients")
     is_favorited = SerializerMethodField(method_name="is_in_favorites")
     is_in_shopping_cart = SerializerMethodField(
         method_name="is_in_shopping_list")
+
+
+class RecipesShoppingCartSerializer(serializers.ModelSerializer):
+    """Сериализатор модели ShoppingList."""
+
+    recipe = FavoriteRecipeSerializer(read_only=True)
+
+    class Meta:
+        model = ShoppingList
+        fields = ('recipe', )

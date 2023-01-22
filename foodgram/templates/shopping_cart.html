@@ -1,0 +1,5 @@
+<ul>
+    {% for ingredient, measurement in download.items %}
+        <li>{{ingredient}} - {{measurement.0}} {{measurement.1}}</li>
+    {% endfor %}
+</ul>
