@@ -4,7 +4,7 @@ from recipes.models import Recipe
 
 
 class FavoriteRecipeSerializer(serializers.ModelSerializer):
-    '''Сериализатор модели Recipes для вывода в Избранное.'''
+    """Сериализатор модели Recipes для вывода в Избранное."""
 
     name = serializers.CharField(read_only=True)
     image = serializers.CharField(source='image.url', read_only=True)

@@ -28,3 +28,5 @@ class Subscription(models.Model):
                 name='subscriber_author'
             ),
         )
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'

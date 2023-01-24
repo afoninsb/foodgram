@@ -58,10 +58,13 @@ class UserGetSubSerializer(UserGetSerializer):
     recipes_count = serializers.SerializerMethodField()
 
     def get_recipes_count(self, obj):
+        """Количество рецептов."""
+
         author = obj if self.context.get('request') else obj['author']
         return author.recipe.all().count()
 
     def get_recipes(self, obj):
+        """Рецепты."""
 
         recipies = obj.recipe.all()
         if self.context.get('request').GET['recipes_limit']:
@@ -84,6 +87,7 @@ class UserGetSubSerializer(UserGetSerializer):
 
 
 class SubscriptionsListSerializer(serializers.ModelSerializer):
+    """GET Сериализатор списка подписок."""
 
     author = UserGetSubSerializer(read_only=True)
 

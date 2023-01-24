@@ -12,4 +12,4 @@ class TagAdmin(admin.ModelAdmin):
         'slug',
         'color',
     )
-    search_fields = ('name',)
+    search_fields = ('name', )

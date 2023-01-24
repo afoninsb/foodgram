@@ -57,7 +57,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
     @action(detail=False, methods=('GET',), url_path='me')
     def me(self, request):
-        """Action me - информация юзера о себе."""
+        """Информация юзера о себе."""
 
         instance = request.user
         serializer = self.get_serializer(instance)
@@ -65,7 +65,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
     @action(detail=False, methods=('POST',), url_path='set_password')
     def set_password(self, request):
-        """Action set_password - изменение пароля юзера."""
+        """Изменение пароля юзера."""
 
         instance = request.user
         serializer = self.get_serializer(
@@ -74,7 +74,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
             partial=True
         )
         if serializer.is_valid(raise_exception=True):
-            self.request.user.set_password(request.data["new_password"])
+            self.request.user.set_password(request.data['new_password'])
             self.request.user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

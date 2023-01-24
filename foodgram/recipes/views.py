@@ -2,22 +2,19 @@ from django.db import IntegrityError
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
-from rest_framework import status
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from foodgram.generic_serializer import FavoriteRecipeSerializer
 from weasyprint import HTML
 
+from foodgram.generic_serializer import FavoriteRecipeSerializer
 from recipes.models import (
     Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
 )
 from recipes.permissions import IsAuthorOrAdmin
-from recipes.serializers import (
-    RecipesGetSerializer, RecipesPostPatchSerializer
-)
+from recipes.serializers import RecipesPostPatchSerializer, RecipesSerializer
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -43,7 +40,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if self.action in ('create', 'partial_update'):
             return RecipesPostPatchSerializer
         elif self.action in ('retrieve', 'list'):
-            return RecipesGetSerializer
+            return RecipesSerializer
         elif self.action in ['favorite', 'shopping_cart']:
             return FavoriteRecipeSerializer
 
@@ -62,10 +59,12 @@ class RecipesViewSet(viewsets.ModelViewSet):
                                values_list('recipe_id', flat=True))
                     queryset = queryset.filter(id__in=ids)
             if self.request.GET.getlist('tags'):
+                ids = set()
                 for tag in self.request.GET.getlist('tags'):
-                    ids = list(RecipeTags.objects.filter(tag_id=tag).
-                               values_list('recipe_id', flat=True))
-                    queryset = queryset.filter(id__in=ids)
+                    obj = set(RecipeTags.objects.filter(tag__slug=tag).
+                              values_list('recipe_id', flat=True))
+                    ids |= obj
+                queryset = queryset.filter(id__in=ids)
         return queryset
 
     def perform_create(self, serializer):
@@ -77,6 +76,23 @@ class RecipesViewSet(viewsets.ModelViewSet):
             text=data['text'],
             cooking_time=data['cooking_time'],
         )
+        self.save_params(recipe)
+
+    def perform_update(self, serializer):
+        data = serializer.validated_data
+        recipe = serializer.save(
+            author=self.request.user,
+            image=data['image'],
+            name=data['name'],
+            text=data['text'],
+            cooking_time=data['cooking_time'],
+            partial=True
+        )
+        RecipeIngredients.objects.filter(recipe=recipe).delete()
+        RecipeTags.objects.filter(recipe=recipe).delete()
+        self.save_params(recipe)
+
+    def save_params(self, recipe):
         bulk_data = [
             RecipeIngredients(
                 recipe=recipe,
@@ -106,7 +122,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=('GET', ), url_path='download_shopping_cart')
     def download_shopping_cart(self, request, **kwargs):
-        """Получение документа сос писком ингредиентов для покупки."""
+        """Получение документа со списком ингредиентов для покупки."""
 
         user = request.user
         spisok = ShoppingList.objects.filter(user=user)

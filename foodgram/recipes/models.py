@@ -81,6 +81,8 @@ class RecipeIngredients(models.Model):
                 name='recipe_ingrdient'
             ),
         )
+        verbose_name = 'Ингредиенты в рецептах'
+        verbose_name_plural = 'Ингредиенты в рецептах'
 
 
 class RecipeTags(models.Model):
@@ -106,6 +108,8 @@ class RecipeTags(models.Model):
                 name='recipe_tag'
             ),
         )
+        verbose_name = 'Тэги рецептов'
+        verbose_name_plural = 'Тэги рецептов'
 
 
 class Favorites(models.Model):
@@ -158,3 +162,5 @@ class ShoppingList(models.Model):
                 name='user_recipe_shoppinglist'
             ),
         )
+        verbose_name = 'Лист покупок'
+        verbose_name_plural = 'Листы покупок'

@@ -1,4 +1,3 @@
-# import contextlib
 import csv
 import os
 
@@ -19,10 +18,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         message = 'Данные добавлены!'
-
-        # # Если БД существует, очищаем её таблицы от данных
-        # with contextlib.suppress(ValueError):
-        #     call_command('flush', '--no-input')
 
         # Выполняем миграции
         call_command('migrate')
