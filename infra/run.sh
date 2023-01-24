@@ -1,7 +1,9 @@
 #!/bin/sh
-echo "Собираем статику"
+echo "### Собираем статику ###"
 sudo docker-compose exec web python manage.py collectstatic --no-input
-echo "Выполняем миграции"
+echo "### Выполняем миграции ###"
 sudo docker-compose exec web python3 manage.py migrate
-echo "Создаём суперпользователя"
+echo "### Загружаем тестовые данные ###"
+sudo docker-compose exec web python3 manage.py loaddata dump.json
+echo "### Создаём суперпользователя ###"
 sudo docker-compose exec web python3 manage.py createsuperuser
