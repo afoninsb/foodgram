@@ -2,7 +2,7 @@ from django.conf import settings
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
 
-from foodgram.generic_serializer import FavoriteRecipeSerializer
+from api.generic_serializer import FavoriteRecipeSerializer
 from users.models import Subscription, User
 
 
@@ -32,13 +32,6 @@ class UserGetSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(read_only=True)
     last_name = serializers.CharField(read_only=True)
 
-    def get_is_subscribed(self, obj):
-        subscriber = self.context.get('request').user.id
-        return Subscription.objects.filter(
-            subscriber_id=subscriber,
-            author=obj,
-        ).exists()
-
     class Meta:
         model = User
         fields = (
@@ -50,12 +43,32 @@ class UserGetSerializer(serializers.ModelSerializer):
             'is_subscribed'
         )
 
+    def get_is_subscribed(self, obj):
+        subscriber = self.context.get('request').user.id
+        return Subscription.objects.filter(
+            subscriber_id=subscriber,
+            author=obj,
+        ).exists()
+
 
 class UserGetSubSerializer(UserGetSerializer):
     """GET Сериализатор модели User для страницы подписок."""
 
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
 
     def get_recipes_count(self, obj):
         """Количество рецептов."""
@@ -72,29 +85,16 @@ class UserGetSubSerializer(UserGetSerializer):
             recipies = recipies[:count]
         return FavoriteRecipeSerializer(recipies, many=True).data
 
-    class Meta:
-        model = User
-        fields = (
-            'email',
-            'id',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipes',
-            'recipes_count'
-        )
-
 
 class SubscriptionsListSerializer(serializers.ModelSerializer):
     """GET Сериализатор списка подписок."""
 
     author = UserGetSubSerializer(read_only=True)
 
-    def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        return ret['author']
-
     class Meta:
         model = Subscription
         fields = ('author', )
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        return ret['author']

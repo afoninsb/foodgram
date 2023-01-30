@@ -1,6 +1,6 @@
 from rest_framework.permissions import AllowAny
 
-from foodgram.classesviewset import ListRetrieveViewSet
+from api.classesviewset import ListRetrieveViewSet
 from tags.models import Tag
 from tags.serializers import TagSerializer
 

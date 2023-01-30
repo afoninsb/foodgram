@@ -4,51 +4,53 @@ from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from weasyprint import HTML
 
-from foodgram.generic_serializer import FavoriteRecipeSerializer
+from api.generic_serializer import FavoriteRecipeSerializer
+from api.pagination import RecipePagination
+from users.models import User
 from recipes.models import (
-    Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
+    Favorites, Recipe, RecipeIngredients, ShoppingCart
 )
-from recipes.permissions import IsAuthorOrAdmin
+from recipes.permissions import IsAuthor
 from recipes.serializers import RecipesPostPatchSerializer, RecipesSerializer
+from tags.models import Tag
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
     """Работа с информацией о рецептах."""
 
-    lookup_field = 'id'
-    pagination_class = LimitOffsetPagination
+    http_method_names = ('get', 'post', 'patch', 'delete')
+    pagination_class = RecipePagination
 
     def get_permissions(self):
         """Права доступа для запросов."""
 
-        if self.action == 'create':
-            self.permission_classes = (IsAuthenticated, )
-        elif self.action in ('partial_update', 'destroy'):
-            self.permission_classes = (IsAuthorOrAdmin, )
-        else:
+        if self.action in ('retrieve', 'list'):
             self.permission_classes = (AllowAny, )
+        elif self.action in ('partial_update', 'destroy'):
+            self.permission_classes = (IsAuthor, )
+        else:
+            self.permission_classes = (IsAuthenticated, )
         return super().get_permissions()
 
     def get_serializer_class(self):
-        """Выбор серриализатора для чтения или записи."""
+        """Выбор сериализатора для чтения или записи."""
 
         if self.action in ('create', 'partial_update'):
             return RecipesPostPatchSerializer
-        elif self.action in ('retrieve', 'list'):
+        if self.action in ('retrieve', 'list'):
             return RecipesSerializer
-        elif self.action in ['favorite', 'shopping_cart']:
+        if self.action in ('favorite', 'shopping_cart'):
             return FavoriteRecipeSerializer
 
     def get_queryset(self):
         queryset = Recipe.objects.all()
-        if self.request.GET:
+        if self.action == 'list':
             models = {
-                'is_in_shopping_cart': ShoppingList,
+                'is_in_shopping_cart': ShoppingCart,
                 'is_favorited': Favorites
             }
             user_id = self.request.user.id
@@ -60,72 +62,38 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     queryset = queryset.filter(id__in=ids)
             if self.request.GET.getlist('tags'):
                 ids = set()
-                for tag in self.request.GET.getlist('tags'):
-                    obj = set(RecipeTags.objects.filter(tag__slug=tag).
-                              values_list('recipe_id', flat=True))
+                for tag_slug in self.request.GET.getlist('tags'):
+                    tag = get_object_or_404(Tag, slug=tag_slug)
+                    obj = set(tag.recipe_set.all().
+                              values_list('id', flat=True))
                     ids |= obj
+                queryset = queryset.filter(id__in=ids)
+            if self.request.GET.get('author'):
+                author = get_object_or_404(
+                    User, id=self.request.GET.get('author')
+                )
+                ids = list(author.recipes.all().values_list('id', flat=True))
                 queryset = queryset.filter(id__in=ids)
         return queryset
 
-    def perform_create(self, serializer):
-        data = serializer.validated_data
-        recipe = serializer.save(
-            author=self.request.user,
-            image=data['image'],
-            name=data['name'],
-            text=data['text'],
-            cooking_time=data['cooking_time'],
-        )
-        self.save_params(recipe)
-
-    def perform_update(self, serializer):
-        data = serializer.validated_data
-        recipe = serializer.save(
-            author=self.request.user,
-            image=data['image'],
-            name=data['name'],
-            text=data['text'],
-            cooking_time=data['cooking_time'],
-            partial=True
-        )
-        RecipeIngredients.objects.filter(recipe=recipe).delete()
-        RecipeTags.objects.filter(recipe=recipe).delete()
-        self.save_params(recipe)
-
-    def save_params(self, recipe):
-        bulk_data = [
-            RecipeIngredients(
-                recipe=recipe,
-                ingredient_id=ingredient['id'],
-                amount=ingredient['amount'],
-            )
-            for ingredient in self.request.data['ingredients']
-        ]
-        RecipeIngredients.objects.bulk_create(bulk_data)
-        bulk_data = [
-            RecipeTags(recipe=recipe, tag_id=tag)
-            for tag in self.request.data['tags']
-        ]
-        RecipeTags.objects.bulk_create(bulk_data)
-
-    @action(detail=True, methods=('POST', 'DELETE'), url_path='favorite')
+    @action(detail=True, methods=('POST', 'DELETE'))
     def favorite(self, request, **kwargs):
         """Добавление в Избранное и удаление из Избранного."""
 
         return self.user_lists(request, Favorites)
 
-    @action(detail=True, methods=('POST', 'DELETE'), url_path='shopping_cart')
+    @action(detail=True, methods=('POST', 'DELETE'))
     def shopping_cart(self, request, **kwargs):
         """Добавление в список покупок и удаление из него."""
 
-        return self.user_lists(request, ShoppingList)
+        return self.user_lists(request, ShoppingCart)
 
-    @action(detail=False, methods=('GET', ), url_path='download_shopping_cart')
+    @action(detail=False, methods=('GET', ))
     def download_shopping_cart(self, request, **kwargs):
         """Получение документа со списком ингредиентов для покупки."""
 
         user = request.user
-        spisok = ShoppingList.objects.filter(user=user)
+        spisok = ShoppingCart.objects.filter(user=user)
         download = {}
         for obj in spisok:
             ingredients = RecipeIngredients.objects.\

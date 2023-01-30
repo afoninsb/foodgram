@@ -6,8 +6,8 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from foodgram.classesviewset import CreateListRetrieveViewSet, ListViewSet
-from foodgram.pagination import MyPagination
+from api.classesviewset import CreateListRetrieveViewSet, ListViewSet
+from api.pagination import RecipePagination
 from users.models import Subscription, User
 from users.serializers import (
     SubscriptionsListSerializer,
@@ -21,8 +21,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
     """Работа с информацией о пользователях."""
 
     queryset = User.objects.all()
-    lookup_field = 'id'
-    pagination_class = MyPagination
+    pagination_class = RecipePagination
 
     def get_serializer_class(self):
         """Выбор сериализатора."""
@@ -42,18 +41,6 @@ class UsersViewSet(CreateListRetrieveViewSet):
         else:
             self.permission_classes = (AllowAny, )
         return super().get_permissions()
-
-    def create(self, request, *args, **kwargs):
-        """Метод create модели User."""
-
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            self.perform_create(serializer)
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED,
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=('GET',), url_path='me')
     def me(self, request):
@@ -123,12 +110,12 @@ class UsersViewSet(CreateListRetrieveViewSet):
                 status=status.HTTP_204_NO_CONTENT)
 
 
-class GetSubscriptionsViewSet(ListViewSet):
-    """Работа с информацией о подписках пользователя."""
+# class GetSubscriptionsViewSet(ListViewSet):
+#     """Работа с информацией о подписках пользователя."""
 
-    serializer_class = SubscriptionsListSerializer
-    permission_classes = (IsAuthenticated, )
-    pagination_class = LimitOffsetPagination
+#     serializer_class = SubscriptionsListSerializer
+#     permission_classes = (IsAuthenticated, )
+#     pagination_class = LimitOffsetPagination
 
-    def get_queryset(self):
-        return Subscription.objects.filter(subscriber=self.request.user)
+#     def get_queryset(self):
+#         return Subscription.objects.filter(subscriber=self.request.user)

@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from tags.models import Tag
-from recipes.models import Favorites, Recipe, RecipeIngredients, RecipeTags, ShoppingList
+from recipes.models import Favorites, Recipe, RecipeIngredients, ShoppingCart
 
 
 class Tags(admin.SimpleListFilter):
@@ -16,14 +16,14 @@ class Tags(admin.SimpleListFilter):
         tags = Tag.objects.all()
         return [(tag.slug, tag.name) for tag in tags]
 
-    def queryset(self, request, queryset):
-        """Фильтр к queryset."""
+    # def queryset(self, request, queryset):
+    #     """Фильтр к queryset."""
 
-        if not self.value():
-            return queryset
-        tags = RecipeTags.objects.\
-            filter(tag__slug=self.value()).values('recipe_id')
-        return queryset.filter(id__in=tags)
+    #     if not self.value():
+    #         return queryset
+    #     tags = RecipeTags.objects.\
+    #         filter(tag__slug=self.value()).values('recipe_id')
+    #     return queryset.filter(id__in=tags)
 
 
 @admin.register(Recipe)
@@ -43,7 +43,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'text',
         'cooking_time',
         'image',
-        'count_favorite'
+        'count_favorite',
     )
     list_filter = (Tags, )
     search_fields = ('name', )
@@ -60,7 +60,7 @@ class FavoriteAdmin(admin.ModelAdmin):
     search_fields = ('user', )
 
 
-@admin.register(ShoppingList)
+@admin.register(ShoppingCart)
 class ShoppingListAdmin(admin.ModelAdmin):
     """Представление списка покупок в админ-панели."""
 
@@ -79,16 +79,5 @@ class RecipeIngredientsAdmin(admin.ModelAdmin):
         'recipe',
         'ingredient',
         'amount',
-    )
-    search_fields = ('recipe', )
-
-
-@admin.register(RecipeTags)
-class RecipeTagsAdmin(admin.ModelAdmin):
-    """Представление списка покупок в админ-панели."""
-
-    list_display = (
-        'recipe',
-        'tag',
     )
     search_fields = ('recipe', )

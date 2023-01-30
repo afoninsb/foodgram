@@ -1,9 +1,20 @@
 #!/bin/sh
-echo "### Собираем статику ###"
+echo "##### НАЧИНАЕМ РАБОТУ #####"
+echo "### 1. Собираем статику ###"
 sudo docker-compose exec web python manage.py collectstatic --no-input
-echo "### Выполняем миграции ###"
+echo "### 2. Выполняем миграции ###"
 sudo docker-compose exec web python3 manage.py migrate
-echo "### Загружаем тестовые данные ###"
-sudo docker-compose exec web python3 manage.py loaddata dump.json
-echo "### Создаём суперпользователя ###"
-sudo docker-compose exec web python3 manage.py createsuperuser
+echo "??? 3. Будем загружать тестовые данные? ('Д/н' или 'Y/n' )"
+read -n 1 yesno
+if [ "$yesno" = "д" ] || [ "$yesno" = "y" ] || [ "$yesno" = "" ] || [ "$yesno" = "Y" ] || [ "$yesno" = "Д" ]
+then
+	echo "### 3. Загружаем тестовые данные ###"
+	sudo docker-compose exec web python3 manage.py loaddata dump.json
+fi
+echo "??? 4. Будем создавать суперпользователя? ('Д/н' или 'Y/n' )"
+if [ "$yesno" = "д" ] || [ "$yesno" = "y" ] || [ "$yesno" = "" ] || [ "$yesno" = "Y" ] || [ "$yesno" = "Д" ]
+then
+	echo "### 4. Создаём суперпользователя ###"
+	sudo docker-compose exec web python3 manage.py createsuperuserelse
+fi
+echo "##### РАБОТА ЗАВЕРШЕНА #####"

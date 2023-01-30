@@ -1,4 +1,4 @@
-from django.core.validators import validate_slug
+from django.core.validators import RegexValidator, validate_slug
 from django.db import models
 
 
@@ -7,19 +7,23 @@ class Tag(models.Model):
 
     name = models.CharField(
         verbose_name='Название',
-        max_length=200
+        max_length=200,
+        unique=True
     )
     color = models.CharField(
         verbose_name='Цвет',
         max_length=7,
-        null=True
+        unique=True,
+        validators=(RegexValidator(
+                '^#([A-Fa-f0-9]{6})$',
+                message='Код цвета должен быть в 16-ричном формате: #FFFFFF'
+            ),)
     )
     slug = models.SlugField(
         verbose_name='Слаг',
         max_length=200,
         unique=True,
         validators=(validate_slug, ),
-        null=True
     )
 
     class Meta:
