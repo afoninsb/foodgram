@@ -21,4 +21,3 @@ class SubscriptionAdmin(admin.ModelAdmin):
         'subscriber',
         'author',
     )
-    search_fields = ('subscriber', 'author')

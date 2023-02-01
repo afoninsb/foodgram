@@ -1,41 +1,16 @@
 from django.contrib import admin
 
-from tags.models import Tag
 from recipes.models import Favorites, Recipe, RecipeIngredients, ShoppingCart
 
 
-class Tags(admin.SimpleListFilter):
-    """Фильтр по тэгам."""
-
-    title = ('Тэги')
-    parameter_name = 'tag'
-
-    def lookups(self, request, model_admin):
-        """Список тэгов."""
-
-        tags = Tag.objects.all()
-        return [(tag.slug, tag.name) for tag in tags]
-
-    # def queryset(self, request, queryset):
-    #     """Фильтр к queryset."""
-
-    #     if not self.value():
-    #         return queryset
-    #     tags = RecipeTags.objects.\
-    #         filter(tag__slug=self.value()).values('recipe_id')
-    #     return queryset.filter(id__in=tags)
+class IngredientInline(admin.TabularInline):
+    model = Recipe.ingredients.through
+    min_num = 1
 
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
     """Представление рецептов в админ-панели."""
-
-    def count_favorite(self, obj):
-        """Количество добавлений в Избранное"""
-
-        return Favorites.objects.filter(recipe=obj).count()
-
-    count_favorite.short_description = "В Избранном (раз)"
 
     list_display = (
         'name',
@@ -45,18 +20,25 @@ class RecipeAdmin(admin.ModelAdmin):
         'image',
         'count_favorite',
     )
-    list_filter = (Tags, )
+
+    list_filter = ('tags', 'name', 'author')
     search_fields = ('name', )
+    inlines = (IngredientInline, )
+    prepopulated_fields = {"slug": ("name",)}
+
+    def count_favorite(self, obj):
+        """Количество добавлений в Избранное"""
+
+        return Favorites.objects.filter(recipe=obj).count()
+
+    count_favorite.short_description = "В Избранном (раз)"
 
 
 @admin.register(Favorites)
 class FavoriteAdmin(admin.ModelAdmin):
     """Представление избранного в админ-панели."""
 
-    list_display = (
-        'user',
-        'recipe',
-    )
+    list_display = ('user', 'recipe')
     search_fields = ('user', )
 
 
@@ -64,10 +46,7 @@ class FavoriteAdmin(admin.ModelAdmin):
 class ShoppingListAdmin(admin.ModelAdmin):
     """Представление списка покупок в админ-панели."""
 
-    list_display = (
-        'user',
-        'recipe',
-    )
+    list_display = ('user', 'recipe')
     search_fields = ('user', )
 
 
@@ -75,9 +54,5 @@ class ShoppingListAdmin(admin.ModelAdmin):
 class RecipeIngredientsAdmin(admin.ModelAdmin):
     """Представление списка покупок в админ-панели."""
 
-    list_display = (
-        'recipe',
-        'ingredient',
-        'amount',
-    )
+    list_display = ('recipe', 'ingredient', 'amount')
     search_fields = ('recipe', )

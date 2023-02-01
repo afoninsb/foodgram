@@ -20,7 +20,7 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
-        through='RecipeIngredients'
+        through='RecipeIngredients',
     )
     tags = models.ManyToManyField(Tag, verbose_name='Тэги')
     cooking_time = models.PositiveSmallIntegerField(
@@ -37,6 +37,10 @@ class Recipe(models.Model):
         verbose_name='Дата публикации',
         auto_now_add=True,
         db_index=True
+    )
+    slug = models.SlugField(
+        verbose_name='Слаг',
+        unique=True
     )
 
     class Meta:

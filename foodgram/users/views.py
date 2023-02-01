@@ -87,5 +87,9 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def subscriptions(self, request):
 
         authors = Subscription.objects.filter(subscriber=request.user)
+        page = self.paginate_queryset(authors)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(authors, many=True)
         return Response(serializer.data)

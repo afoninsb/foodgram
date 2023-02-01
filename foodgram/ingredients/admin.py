@@ -12,3 +12,4 @@ class IngredientAdmin(admin.ModelAdmin):
         'measurement_unit',
     )
     search_fields = ('name', )
+    list_filter = ('name', )
