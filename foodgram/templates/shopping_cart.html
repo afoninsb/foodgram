@@ -1,5 +1,20 @@
-<ul>
-    {% for ingredient, measurement in download.items %}
-        <li>{{ingredient}} - {{measurement.0}} {{measurement.1}}</li>
-    {% endfor %}
-</ul>
+{% for key, value in info.items %}
+  {% if key == 'recipes' %}
+    <h2>Рецепты</h2>
+    <ul>
+      {% for name, params in value.items %}
+        <h3>{{name}}</h3>
+        {% for ingredient in params %}
+          <li>{{ingredient}}</li>
+        {% endfor %}
+      {% endfor %}
+    </ul>
+  {% else %}
+    <h2>Ингредиенты</h2>
+    <ul>
+      {% for name, params in value.items %}
+        <li>{{name}} - {{params.0}} {{params.1}}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+{% endfor %}

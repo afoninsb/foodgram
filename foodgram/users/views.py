@@ -1,18 +1,15 @@
-from django.db import IntegrityError
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-from api.classesviewset import CreateListRetrieveViewSet, ListViewSet
+from api.classesviewset import CreateListRetrieveViewSet
 from api.pagination import RecipePagination
 from users.models import Subscription, User
 from users.serializers import (
-    SubscriptionsListSerializer,
+    SubscriptionsSerializer,
     UserGetSerializer,
-    UserGetSubSerializer,
     UserPostSerializer
 )
 
@@ -28,21 +25,20 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
         if self.action == 'create':
             return UserPostSerializer
-        elif self.action == 'subscribe':
-            return UserGetSubSerializer
-        else:
-            return UserGetSerializer
+        if 'subscri' in self.action:
+            return SubscriptionsSerializer
+        return UserGetSerializer
 
     def get_permissions(self):
         """Права доступа для GET запросов."""
 
-        if self.action in ('retrieve', 'me', 'set_password', 'subscribe'):
-            self.permission_classes = (IsAuthenticated, )
-        else:
+        if self.action in ('create', 'list'):
             self.permission_classes = (AllowAny, )
+        else:
+            self.permission_classes = (IsAuthenticated, )
         return super().get_permissions()
 
-    @action(detail=False, methods=('GET',), url_path='me')
+    @action(detail=False, methods=('GET',))
     def me(self, request):
         """Информация юзера о себе."""
 
@@ -50,72 +46,46 @@ class UsersViewSet(CreateListRetrieveViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    @action(detail=False, methods=('POST',), url_path='set_password')
+    @action(detail=False, methods=('POST',))
     def set_password(self, request):
         """Изменение пароля юзера."""
 
-        instance = request.user
         serializer = self.get_serializer(
-            instance,
+            request.user,
             request.data,
             partial=True
         )
-        if serializer.is_valid(raise_exception=True):
-            self.request.user.set_password(request.data['new_password'])
-            self.request.user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        self.request.user.set_password(request.data['new_password'])
+        self.request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=('POST', 'DELETE'), url_path='subscribe')
-    def subscribe(self, request, **kwargs):
-        """Action subscribe - подписка и отмена подписки."""
+    @action(detail=True, methods=('POST',))
+    def subscribe(self, request, pk):
+        """Подписка и отмена подписки."""
 
-        subscriber = request.user
-        author = get_object_or_404(User, id=self.kwargs.get('id'))
         if request.method == 'POST':
-            try:
-                Subscription.objects.create(
-                    subscriber=subscriber,
-                    author=author
-                )
-            except IntegrityError:
-                return Response(
-                    'Вы уже подписаны на этого пользователя',
-                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                serializer = self.get_serializer(
-                    author,
-                    data=request.data,
-                    context={'request': request}
-                )
-                serializer.is_valid(raise_exception=True)
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED,
-                )
-        try:
-            obj = get_object_or_404(
-                Subscription,
-                subscriber=subscriber,
-                author=author
-            )
-        except Exception:
-            return Response(
-                'Вы не подписаны на этого пользователя',
-                status=status.HTTP_400_BAD_REQUEST)
-        else:
-            obj.delete()
-            return Response(
-                'Вы отписались от этого пользователя',
-                status=status.HTTP_204_NO_CONTENT)
+            serializer = self.get_serializer(data={'id': pk})
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
 
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, pk):
+        obj = get_object_or_404(
+            Subscription,
+            subscriber=request.user,
+            author_id=pk
+        )
+        obj.delete()
+        return Response(
+            'Вы отписались от пользователя',
+            status=status.HTTP_204_NO_CONTENT
+        )
 
-# class GetSubscriptionsViewSet(ListViewSet):
-#     """Работа с информацией о подписках пользователя."""
+    @action(detail=False, methods=('GET',))
+    def subscriptions(self, request):
 
-#     serializer_class = SubscriptionsListSerializer
-#     permission_classes = (IsAuthenticated, )
-#     pagination_class = LimitOffsetPagination
-
-#     def get_queryset(self):
-#         return Subscription.objects.filter(subscriber=self.request.user)
+        authors = Subscription.objects.filter(subscriber=request.user)
+        serializer = self.get_serializer(authors, many=True)
+        return Response(serializer.data)

@@ -1,8 +1,9 @@
 from django.conf import settings
 from djoser.serializers import UserCreateSerializer
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from api.generic_serializer import FavoriteRecipeSerializer
+from api.generic_serializer import RecipeUserListSerializer
 from users.models import Subscription, User
 
 
@@ -74,27 +75,44 @@ class UserGetSubSerializer(UserGetSerializer):
         """Количество рецептов."""
 
         author = obj if self.context.get('request') else obj['author']
-        return author.recipe.all().count()
+        return author.recipes.all().count()
 
     def get_recipes(self, obj):
         """Рецепты."""
 
-        recipies = obj.recipe.all()
+        recipies = obj.recipes.all()
         if self.context.get('request').GET['recipes_limit']:
             count = int(self.context.get('request').GET['recipes_limit'])
             recipies = recipies[:count]
-        return FavoriteRecipeSerializer(recipies, many=True).data
+        return RecipeUserListSerializer(recipies, many=True).data
 
 
-class SubscriptionsListSerializer(serializers.ModelSerializer):
-    """GET Сериализатор списка подписок."""
+class SubscriptionsSerializer(serializers.ModelSerializer):
+    """Сериализатор списка подписок."""
 
     author = UserGetSubSerializer(read_only=True)
+    subscriber = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Subscription
-        fields = ('author', )
+        fields = ('author', 'subscriber')
+
+    def create(self, validated_data):
+        return Subscription.objects.create(**validated_data)
+
+    def validate(self, data):
+        subscriber = self.context['request'].user
+        author = get_object_or_404(User, id=self.initial_data['id'])
+        if subscriber == author:
+            raise serializers.ValidationError("Нельзя подписаться на себя")
+        if Subscription.objects.filter(
+            subscriber=subscriber,
+            author=author
+        ).exists():
+            raise serializers.ValidationError(
+                "Вы уже подписаны на этого пользователя")
+        return {'subscriber': subscriber, 'author': author}
 
     def to_representation(self, instance):
-        ret = super().to_representation(instance)
-        return ret['author']
+        rep = super().to_representation(instance)
+        return rep['author']
