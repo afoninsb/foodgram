@@ -2,10 +2,19 @@ version: '3.3'
 
 services:
 
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    volumes:
+      - ../frontend/:/app/result_build/
+
   db:
     image: postgres:13.0-alpine
     volumes:
       - postgres_value:/var/lib/postgresql/data/
+    depends_on:
+      - frontend
     env_file:
       - ./.env
     restart: unless-stopped
@@ -35,15 +44,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-  frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
-    volumes:
-      - ../frontend/:/app/result_build/
-    depends_on:
-      - web
 
   nginx:
     image: nginx:1.19.3
