@@ -8,6 +8,7 @@ class RecipeUserListSerializer(serializers.ModelSerializer):
 
     name = serializers.CharField(read_only=True)
     cooking_time = serializers.IntegerField(read_only=True)
+    image = serializers.CharField(source='image.url', read_only=True)
 
     class Meta:
         model = Recipe

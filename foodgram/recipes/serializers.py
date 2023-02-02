@@ -34,6 +34,7 @@ class RecipesSerializer(serializers.ModelSerializer):
     is_favorited = serializers.BooleanField(read_only=True, default=False)
     is_in_shopping_cart = serializers.BooleanField(
         read_only=True, default=False)
+    image = serializers.CharField(source='image.url')
 
     class Meta:
         model = Recipe
