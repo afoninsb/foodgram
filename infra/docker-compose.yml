@@ -3,7 +3,9 @@ version: '3.3'
 services:
 
   frontend:
-    build:
+    # build:
+    #   context: ../frontend
+    #   dockerfile: Dockerfile
     image: afoninsb/foodgram_front
     volumes:
       - ../frontend/:/app/result_build/
@@ -25,8 +27,10 @@ services:
       start_period: 40s
 
   web:
-    build:
     image: afoninsb/foodgram_back:0.1.1
+    # build:
+    #   context: ../foodgram
+    #   dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
       - ../foodgram/:/backend/
