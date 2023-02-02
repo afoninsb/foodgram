@@ -23,7 +23,6 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ('tags', 'name', 'author')
     search_fields = ('name', )
     inlines = (IngredientInline, )
-    prepopulated_fields = {"slug": ("name",)}
     readonly_fields = ('count_favorite',)
 
     def count_favorite(self, obj):

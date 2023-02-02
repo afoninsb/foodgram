@@ -57,7 +57,7 @@ class TagsPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
 
 
 class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
-    """Сериализатор модели Recipes."""
+    """Сериализатор модели ингредиентов рецепта."""
 
     id = serializers.IntegerField(write_only=True)
     amount = serializers.IntegerField(write_only=True)

@@ -38,10 +38,6 @@ class Recipe(models.Model):
         auto_now_add=True,
         db_index=True
     )
-    slug = models.SlugField(
-        verbose_name='Слаг',
-        unique=True
-    )
 
     class Meta:
         verbose_name = 'Рецепт'
