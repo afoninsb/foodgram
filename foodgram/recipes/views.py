@@ -61,8 +61,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
                     user=self.request.user, recipe=OuterRef('id')))
             ).select_related('author').prefetch_related(
                 'tags', 'ingredients')
-        return Recipe.objects.select_related('author').prefetch_related(
-                'tags', 'ingredients')
+        return Recipe.objects.select_related(
+            'author').prefetch_related('tags', 'ingredients')
 
     @action(detail=True, methods=('POST',))
     def favorite(self, request, pk):
