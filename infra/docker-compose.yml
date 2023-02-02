@@ -4,7 +4,7 @@ services:
 
   frontend:
     build:
-      context: ../frontend
+      context: frontend
       dockerfile: Dockerfile
     volumes:
       - ../frontend/:/app/result_build/
@@ -27,7 +27,7 @@ services:
 
   web:
     build:
-      context: ../foodgram
+      context: foodgram
       dockerfile: Dockerfile
     restart: unless-stopped
     volumes:
