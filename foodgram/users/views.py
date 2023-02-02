@@ -60,11 +60,10 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def subscribe(self, request, pk):
         """Подписка."""
 
-        if request.method == 'POST':
-            serializer = self.get_serializer(data={'id': pk})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
+        serializer = self.get_serializer(data={'id': pk})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     @subscribe.mapping.delete
     def delete_subscribe(self, request, pk):

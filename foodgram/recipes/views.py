@@ -44,12 +44,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         if self.action in ('create', 'partial_update'):
             return RecipesPostPatchSerializer
-        if self.action in ('retrieve', 'list'):
-            return RecipesSerializer
         if self.action == 'favorite':
             return RecipesFavoriteSerializer
         if self.action == 'shopping_cart':
             return RecipesShoppingCartSerializer
+        return RecipesSerializer
 
     def get_queryset(self):
         """Получаем queryset рецептов."""
@@ -92,11 +91,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def user_lists(self, request, pk):
         """Добавление в списки Избранное и Покупок."""
 
-        if request.method == 'POST':
-            serializer = self.get_serializer(data={'id': pk})
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data)
+        serializer = self.get_serializer(data={'id': pk})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
     def del_user_lists(self, request, model, pk):
         """Удаление из списков Избранное и Покупок."""

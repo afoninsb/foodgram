@@ -97,7 +97,7 @@ class RecipesPostPatchSerializer(RecipesSerializer):
             **validated_data
         )
         recipe.tags.set(tags)
-        self.SaveRecipeIngredients(recipe, ingredients)
+        self.saverecipeingredients(recipe, ingredients)
         return recipe
 
     def update(self, instance, validated_data):
@@ -107,10 +107,10 @@ class RecipesPostPatchSerializer(RecipesSerializer):
         instance.tags.clear()
         instance.tags.set(tags)
         RecipeIngredients.objects.filter(recipe=instance).delete()
-        self.SaveRecipeIngredients(instance, ingredients)
+        self.saverecipeingredients(instance, ingredients)
         return instance
 
-    def SaveRecipeIngredients(self, recipe, ingredients):
+    def saverecipeingredients(self, recipe, ingredients):
         RecipeIngredients.objects.bulk_create([
             RecipeIngredients(
                 recipe=recipe,
