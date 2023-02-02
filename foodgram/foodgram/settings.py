@@ -7,15 +7,14 @@ SECRET_KEY = os.getenv(
     'SECRET_KEY', default='django_secret_key:sadyhgf56r2ku546оеityropqtf7l'
 )
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ('http://localhost', 'http://127.0.0.1')
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ('localhost', '127.0.0.1', 'web')
+ALLOWED_HOSTS = ('localhost', '127.0.0.1', 'web', '158.160.23.207')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
-    
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -63,13 +62,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
 DATABASES = {
     'default': {
         'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
