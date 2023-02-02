@@ -26,7 +26,6 @@ sh run.sh
 "last_name": "kolyaev",
 "password": "Fgtkmcby1"
 }
-d1d7a852e59c22774b5add39d8e69b0a42a9f5ee
 
 {
 "email": "vasya@vasya.ru",
@@ -35,7 +34,6 @@ d1d7a852e59c22774b5add39d8e69b0a42a9f5ee
 "last_name": "vasiliev",
 "password": "Fgtkmcby1"
 }
-ab3b9f8e7c50f1397e91cd7f4079edc59f5cc614
 
 Рецепты без картинок, т.к. тестовые данные создавал в докере, и фотки там внутри.
 Как их оттуда передать тебе, не знаю.
