@@ -1,25 +1,20 @@
-from weasyprint import HTML
-
+from api.pagination import RecipePagination
 from django.db.models import Exists, OuterRef
 from django.http import HttpResponse
-from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
+from django_filters.rest_framework import DjangoFilterBackend
+from recipes.filters import RecipeFilter
+from recipes.models import Favorites, Recipe, ShoppingCart
+from recipes.permissions import IsAuthor
+from recipes.serializers import (RecipesFavoriteSerializer,
+                                 RecipesPostPatchSerializer, RecipesSerializer,
+                                 RecipesShoppingCartSerializer)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-
-from api.pagination import RecipePagination
-from recipes.filters import RecipeFilter
-from recipes.models import (
-    Favorites, Recipe, ShoppingCart
-)
-from recipes.permissions import IsAuthor
-from recipes.serializers import (
-    RecipesPostPatchSerializer, RecipesSerializer,
-    RecipesShoppingCartSerializer, RecipesFavoriteSerializer
-)
+from weasyprint import HTML
 
 
 class RecipesViewSet(viewsets.ModelViewSet):

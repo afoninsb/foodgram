@@ -1,15 +1,14 @@
 import base64
 from uuid import uuid1
 
+from api.generic_serializer import RecipeUserListSerializer
 from django.core.files.base import ContentFile
 from django.db.models import F
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers
-from rest_framework.fields import SerializerMethodField
-
-from api.generic_serializer import RecipeUserListSerializer
 from ingredients.models import Ingredient
 from recipes.models import Favorites, Recipe, RecipeIngredients, ShoppingCart
+from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField
 from tags.models import Tag
 from tags.serializers import TagSerializer
 from users.serializers import UserGetSerializer
