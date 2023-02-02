@@ -4,8 +4,7 @@ services:
 
   frontend:
     build:
-      context: frontend
-      dockerfile: Dockerfile
+    image: afoninsb/foodgram_front
     volumes:
       - ../frontend/:/app/result_build/
 
@@ -27,8 +26,7 @@ services:
 
   web:
     build:
-      context: foodgram
-      dockerfile: Dockerfile
+    image: afoninsb/foodgram_back:0.1.1
     restart: unless-stopped
     volumes:
       - ../foodgram/:/backend/
