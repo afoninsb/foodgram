@@ -14,16 +14,18 @@ class Tag(models.Model):
         verbose_name='Цвет',
         max_length=7,
         unique=True,
-        validators=(RegexValidator(
+        validators=(
+            RegexValidator(
                 '^#([A-Fa-f0-9]{6})$',
                 message='Код цвета должен быть в 16-ричном формате: #FFFFFF'
-            ),)
+            ),
+        )
     )
     slug = models.SlugField(
         verbose_name='Слаг',
         max_length=200,
         unique=True,
-        validators=(validate_slug, ),
+        validators=(validate_slug,),
     )
 
     class Meta:

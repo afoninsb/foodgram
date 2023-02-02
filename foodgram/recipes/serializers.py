@@ -49,6 +49,7 @@ class RecipesSerializer(serializers.ModelSerializer):
 
 
 class TagsPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
+    """Представление тэгов в списке рецептов."""
 
     def to_representation(self, value):
         serializer = TagSerializer(value)
@@ -56,6 +57,8 @@ class TagsPrimaryKeyRelatedField(serializers.PrimaryKeyRelatedField):
 
 
 class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
+    """Сериализатор модели Recipes."""
+
     id = serializers.IntegerField(write_only=True)
     amount = serializers.IntegerField(write_only=True)
 
@@ -127,7 +130,7 @@ class RecipesPostPatchSerializer(RecipesSerializer):
 
 
 class RecipesShoppingCartSerializer(serializers.ModelSerializer):
-    """Сериализатор модели ShoppingList."""
+    """Сериализатор модели ShoppingCart."""
 
     user = UserGetSerializer(read_only=True)
     recipe = RecipeUserListSerializer(read_only=True)

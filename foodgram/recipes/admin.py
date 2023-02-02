@@ -20,11 +20,11 @@ class RecipeAdmin(admin.ModelAdmin):
         'image',
         'count_favorite',
     )
-
     list_filter = ('tags', 'name', 'author')
     search_fields = ('name', )
     inlines = (IngredientInline, )
     prepopulated_fields = {"slug": ("name",)}
+    readonly_fields = ('count_favorite',)
 
     def count_favorite(self, obj):
         """Количество добавлений в Избранное"""
@@ -43,7 +43,7 @@ class FavoriteAdmin(admin.ModelAdmin):
 
 
 @admin.register(ShoppingCart)
-class ShoppingListAdmin(admin.ModelAdmin):
+class ShoppingCartAdmin(admin.ModelAdmin):
     """Представление списка покупок в админ-панели."""
 
     list_display = ('user', 'recipe')

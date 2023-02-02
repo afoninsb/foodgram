@@ -9,6 +9,5 @@ class TagsViewSet(ListRetrieveViewSet):
     """Работа с информацией о тэгах."""
 
     queryset = Tag.objects.all()
-    lookup_field = 'id'
     serializer_class = TagSerializer
-    permission_classes = (AllowAny, )
+    permission_classes = (AllowAny,)

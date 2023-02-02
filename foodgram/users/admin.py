@@ -5,12 +5,12 @@ from django.contrib.auth.models import User
 from users.models import Subscription
 
 
-class MyUserAdmin(UserAdmin):
+class UserAdmin(UserAdmin):
     list_filter = UserAdmin.list_filter + ('username', 'email')
 
 
 admin.site.unregister(User)
-admin.site.register(User, MyUserAdmin)
+admin.site.register(User, UserAdmin)
 
 
 @admin.register(Subscription)

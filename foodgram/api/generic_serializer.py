@@ -4,7 +4,7 @@ from recipes.models import Recipe
 
 
 class RecipeUserListSerializer(serializers.ModelSerializer):
-    """Сериализатор модели Recipes для вывода в Избранное."""
+    """Сериализатор модели Recipes для вывода в списки рецептов."""
 
     name = serializers.CharField(read_only=True)
     cooking_time = serializers.IntegerField(read_only=True)

@@ -7,11 +7,12 @@ SECRET_KEY = os.getenv(
     'SECRET_KEY', default='django_secret_key:sadyhgf56r2ku546оеityropqtf7l'
 )
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ('localhost', '127.0.0.1', 'web')
-
-CSRF_TRUSTED_ORIGINS = ['http://localhost', 'http://127.0.0.1']
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = ('localhost', '127.0.0.1', 'web')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -62,22 +63,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('POSTGRES_DB', default='foodgram_db'),
-        'USER': os.getenv('POSTGRES_USER', default='foodgram_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='foodgram_password'),
-        'HOST': os.getenv('DB_HOST', default='db'),
-        'PORT': os.getenv('DB_PORT', default='5432')
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        }
     }
-}
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-# }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+            'NAME': os.getenv('POSTGRES_DB', default='foodgram_db'),
+            'USER': os.getenv('POSTGRES_USER', default='foodgram_user'),
+            'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='foodgram_password'),
+            'HOST': os.getenv('DB_HOST', default='db'),
+            'PORT': os.getenv('DB_PORT', default='5432')
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

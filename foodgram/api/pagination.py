@@ -4,6 +4,7 @@ from rest_framework.pagination import PageNumberPagination, Response
 
 class RecipePagination(PageNumberPagination):
     """Пагинатор для вывода списка рецептов."""
+
     page_size = settings.RECIPE_PER_PAGE
     page_size_query_param = 'limit'
 

@@ -30,7 +30,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
         return UserGetSerializer
 
     def get_permissions(self):
-        """Права доступа для GET запросов."""
+        """Права доступа для запросов."""
 
         if self.action in ('create', 'list'):
             self.permission_classes = (AllowAny, )
@@ -62,7 +62,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
     @action(detail=True, methods=('POST',))
     def subscribe(self, request, pk):
-        """Подписка и отмена подписки."""
+        """Подписка."""
 
         if request.method == 'POST':
             serializer = self.get_serializer(data={'id': pk})
@@ -72,6 +72,8 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
     @subscribe.mapping.delete
     def delete_subscribe(self, request, pk):
+        """Отмена подписки."""
+
         obj = get_object_or_404(
             Subscription,
             subscriber=request.user,
@@ -85,6 +87,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
     @action(detail=False, methods=('GET',))
     def subscriptions(self, request):
+        """Список подписок пользователя."""
 
         authors = Subscription.objects.filter(subscriber=request.user)
         page = self.paginate_queryset(authors)

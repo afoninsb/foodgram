@@ -13,4 +13,4 @@ class IngredientsViewSet(ListRetrieveViewSet):
     serializer_class = IngredientSerializer
     filter_backends = [filters.SearchFilter]
     search_fields = ('^name',)
-    permission_classes = (AllowAny, )
+    permission_classes = (AllowAny,)

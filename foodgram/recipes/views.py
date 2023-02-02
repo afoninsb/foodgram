@@ -1,3 +1,5 @@
+from weasyprint import HTML
+
 from django.db.models import Exists, OuterRef
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
@@ -7,7 +9,6 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from weasyprint import HTML
 
 from api.pagination import RecipePagination
 from recipes.filters import RecipeFilter
@@ -38,7 +39,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if self.action in ('retrieve', 'list'):
             self.permission_classes = (AllowAny, )
         elif self.action in ('partial_update', 'destroy'):
-            self.permission_classes = (IsAuthor, )
+            self.permission_classes = (IsAuthor,)
         else:
             self.permission_classes = (IsAuthenticated, )
         return super().get_permissions()
@@ -56,6 +57,8 @@ class RecipesViewSet(viewsets.ModelViewSet):
             return RecipesShoppingCartSerializer
 
     def get_queryset(self):
+        """Получаем queryset рецептов."""
+
         if self.request.user.is_authenticated:
             return Recipe.objects.annotate(
                 is_favorited=Exists(Favorites.objects.filter(
@@ -69,7 +72,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=('POST',))
     def favorite(self, request, pk):
-        """Добавление в Избранное и удаление из Избранного."""
+        """Добавление в Избранное."""
 
         return self.user_lists(request, pk)
 
@@ -81,7 +84,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=('POST',))
     def shopping_cart(self, request, pk):
-        """Добавление в список покупок."""
+        """Добавление в Список покупок."""
 
         return self.user_lists(request, pk)
 

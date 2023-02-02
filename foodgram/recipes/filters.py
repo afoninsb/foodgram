@@ -5,6 +5,7 @@ from recipes.models import Favorites, Recipe, ShoppingCart
 
 
 class RecipeFilter(filters.FilterSet):
+    """Фильтры рецептов."""
 
     is_favorited = filters.BooleanFilter(method='filter_bool')
     is_in_shopping_cart = filters.BooleanFilter(method='filter_bool')
