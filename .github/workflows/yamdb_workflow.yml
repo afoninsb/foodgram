@@ -46,7 +46,7 @@ jobs:
           context: ./foodgram/
           file: foodgram/Dockerfile
           push: true
-          tags: afoninsb/foodgram_back:0.1.1
+          tags: afoninsb/foodgram_back:0.1.2
 
   deploy:
     runs-on: ubuntu-latest
@@ -61,7 +61,7 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             # sudo docker pull afoninsb/foodgram_front
-            # sudo docker pull afoninsb/foodgram_back:0.1.1
+            # sudo docker pull afoninsb/foodgram_back:0.1.2
             touch .env
             echo ${{ secrets.ALL_DB }} > .env
             sudo docker-compose up -d

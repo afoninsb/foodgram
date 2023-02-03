@@ -17,7 +17,7 @@ services:
       start_period: 40s
 
   web:
-    image: afoninsb/foodgram_back:0.1.1
+    image: afoninsb/foodgram_back:0.1.2
     # build:
     #   context: ../foodgram
     #   dockerfile: Dockerfile
