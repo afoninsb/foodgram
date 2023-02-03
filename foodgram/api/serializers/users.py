@@ -1,8 +1,9 @@
-from api.serializers.recipe_user_list import RecipeUserListSerializer
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer
 from rest_framework import serializers
+
+from api.serializers.recipe_user_list import RecipeUserListSerializer
 from users.models import Subscription, User
 
 

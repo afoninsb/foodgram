@@ -1,16 +1,15 @@
-from api.classesviewset import CreateListRetrieveViewSet
-from api.pagination import RecipePagination
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
+from api.classesviewset import CreateListRetrieveViewSet
+from api.pagination import RecipePagination
+from api.serializers.users import (SubscriptionsSerializer,
+                                   UserGetSerializer,
+                                   UserPostSerializer)
 from users.models import Subscription, User
-from api.serializers.users import (
-    SubscriptionsSerializer,
-    UserGetSerializer,
-    UserPostSerializer
-)
 
 
 class UsersViewSet(CreateListRetrieveViewSet):

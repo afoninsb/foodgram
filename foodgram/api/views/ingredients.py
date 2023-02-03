@@ -1,8 +1,9 @@
-from api.classesviewset import ListRetrieveViewSet
-from ingredients.models import Ingredient
-from api.serializers.ingredients import IngredientSerializer
 from rest_framework import filters
 from rest_framework.permissions import AllowAny
+
+from api.classesviewset import ListRetrieveViewSet
+from api.serializers.ingredients import IngredientSerializer
+from ingredients.models import Ingredient
 
 
 class IngredientsViewSet(ListRetrieveViewSet):

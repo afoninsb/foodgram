@@ -1,5 +1,6 @@
 from django.db.models import Exists, OuterRef
 from django_filters import rest_framework as filters
+
 from recipes.models import Favorites, Recipe, ShoppingCart
 
 

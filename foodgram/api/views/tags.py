@@ -1,7 +1,8 @@
-from api.classesviewset import ListRetrieveViewSet
 from rest_framework.permissions import AllowAny
-from tags.models import Tag
+
+from api.classesviewset import ListRetrieveViewSet
 from api.serializers.tags import TagSerializer
+from tags.models import Tag
 
 
 class TagsViewSet(ListRetrieveViewSet):
