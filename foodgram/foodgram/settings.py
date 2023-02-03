@@ -11,7 +11,7 @@ CSRF_TRUSTED_ORIGINS = ('http://localhost', 'http://127.0.0.1')
 
 DEBUG = False
 
-ALLOWED_HOSTS = ('localhost', '127.0.0.1', 'web', '158.160.23.207')
+ALLOWED_HOSTS = ('localhost', '127.0.0.1', 'web', '158.160.15.180')
 
 INSTALLED_APPS = [
     'django.contrib.admin',
