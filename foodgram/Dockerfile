@@ -1,8 +1,11 @@
 FROM python:3.10-slim
 
-RUN apt-get update && apt-get upgrade -y && apt-get install curl python3-pip libpango-1.0-0 libharfbuzz0b libpangoft2-1.0-0 libffi-dev libjpeg-dev libopenjp2-7-dev -y 
+ENV HOME /backend
+ENV PYTHONPATH ${HOME}
 
-WORKDIR /backend
+RUN apt-get update && apt-get upgrade -y && apt-get install curl python3-pip libpango-1.0-0 libharfbuzz0b libpangoft2-1.0-0 libffi-dev libjpeg-dev libopenjp2-7-dev -y
+
+WORKDIR ${HOME}/
 
 COPY requirements.txt .
 
