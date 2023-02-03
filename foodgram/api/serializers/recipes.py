@@ -1,17 +1,17 @@
 import base64
 from uuid import uuid1
 
-from api.generic_serializer import RecipeUserListSerializer
 from django.core.files.base import ContentFile
 from django.db.models import F
 from django.shortcuts import get_object_or_404
+from api.serializers.recipe_user_list import RecipeUserListSerializer
 from ingredients.models import Ingredient
 from recipes.models import Favorites, Recipe, RecipeIngredients, ShoppingCart
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 from tags.models import Tag
-from tags.serializers import TagSerializer
-from users.serializers import UserGetSerializer
+from api.serializers.tags import TagSerializer
+from api.serializers.users import UserGetSerializer
 
 
 class Base64ImageField(serializers.ImageField):

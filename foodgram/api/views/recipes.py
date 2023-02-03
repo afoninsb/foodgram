@@ -4,12 +4,15 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.filters import RecipeFilter
+from api.filters import RecipeFilter
 from recipes.models import Favorites, Recipe, ShoppingCart
-from recipes.permissions import IsAuthor
-from recipes.serializers import (RecipesFavoriteSerializer,
-                                 RecipesPostPatchSerializer, RecipesSerializer,
-                                 RecipesShoppingCartSerializer)
+from api.permissions import IsAuthor
+from api.serializers.recipes import (
+    RecipesFavoriteSerializer,
+    RecipesPostPatchSerializer,
+    RecipesSerializer,
+    RecipesShoppingCartSerializer
+)
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
