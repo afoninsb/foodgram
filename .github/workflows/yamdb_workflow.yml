@@ -61,7 +61,12 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             touch .env
-            echo ${{ secrets.ALL_DB }} > .env
+            echo ${{ secrets.DB_ENGINE }} > .env
+            echo ${{ secrets.POSTGRES_DB }} > .env
+            echo ${{ secrets.POSTGRES_USER }} > .env
+            echo ${{ secrets.POSTGRES_PASSWORD }} > .env
+            echo ${{ secrets.DB_HOST }} > .env
+            echo ${{ secrets.DB_PORT }} > .env
             sudo docker-compose up -d
 
   send_message:
