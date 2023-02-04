@@ -7,7 +7,7 @@ SECRET_KEY = os.getenv(
     'SECRET_KEY', default='django_secret_key:sadyhgf56r2ku546оеityropqtf7l'
 )
 
-CSRF_TRUSTED_ORIGINS = ('http://localhost', 'http://127.0.0.1', '158.160.10.11')
+CSRF_TRUSTED_ORIGINS = ('http://localhost', 'http://127.0.0.1', 'http://158.160.10.11')
 
 DEBUG = False
 
