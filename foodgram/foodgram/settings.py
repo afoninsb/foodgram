@@ -13,6 +13,8 @@ DEBUG = False
 
 ALLOWED_HOSTS = ('localhost', '127.0.0.1', 'web', '158.160.10.11')
 
+AUTH_USER_MODEL = 'users.User'
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -61,6 +63,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'foodgram.wsgi.application'
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': 'db.sqlite3',
+#     }
+# }
 
 DATABASES = {
     'default': {
