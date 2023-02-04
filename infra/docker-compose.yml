@@ -19,9 +19,9 @@ services:
   web:
     image: afoninsb/foodgram_back:0.1.3
     restart: unless-stopped
-    # volumes:
-      # - media_value:/backend/media/django/
-      # - static_value:/backend/static/django/
+    volumes:
+      - media_value:/backend/media/django/
+      - static_value:/backend/static/django/
     depends_on:
       - db
     env_file:
