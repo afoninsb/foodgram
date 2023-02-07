@@ -7,9 +7,6 @@ from ingredients.models import Ingredient
 class IngredientAdmin(admin.ModelAdmin):
     """Представление ингредиентов в админ-панели."""
 
-    list_display = (
-        'name',
-        'measurement_unit',
-    )
-    search_fields = ('name', )
-    list_filter = ('name', )
+    list_display = ('name', 'measurement_unit')
+    search_fields = ('name',)
+    list_filter = ('name',)

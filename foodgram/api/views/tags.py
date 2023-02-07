@@ -1,13 +1,11 @@
-from rest_framework.permissions import AllowAny
+from rest_framework import viewsets
 
-from api.classesviewset import ListRetrieveViewSet
 from api.serializers.tags import TagSerializer
 from tags.models import Tag
 
 
-class TagsViewSet(ListRetrieveViewSet):
+class TagsViewSet(viewsets.ReadOnlyModelViewSet):
     """Работа с информацией о тэгах."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (AllowAny,)

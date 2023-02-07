@@ -1,4 +1,4 @@
-from django.core.validators import RegexValidator, validate_slug
+from django.core.validators import RegexValidator
 from django.db import models
 
 
@@ -21,12 +21,7 @@ class Tag(models.Model):
             ),
         )
     )
-    slug = models.SlugField(
-        verbose_name='Слаг',
-        max_length=200,
-        unique=True,
-        validators=(validate_slug,),
-    )
+    slug = models.SlugField(verbose_name='Слаг', max_length=200, unique=True)
 
     class Meta:
         verbose_name = 'Тэг'

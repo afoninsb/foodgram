@@ -1,22 +1,21 @@
 from django.db.models import Exists, OuterRef
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from weasyprint import HTML
 
 from api.filters import RecipeFilter
-from api.pagination import RecipePagination
+from api.pagination import Pagination
 from api.permissions import IsAuthor
 from api.serializers.recipes import (RecipesFavoriteSerializer,
                                      RecipesPostPatchSerializer,
                                      RecipesSerializer,
                                      RecipesShoppingCartSerializer)
-from recipes.models import Favorites, Recipe, ShoppingCart
+from recipes.models import Favorite, Recipe, ShoppingCart
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -24,21 +23,26 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
     queryset = Recipe.objects.all()
     http_method_names = ('get', 'post', 'patch', 'delete')
-    pagination_class = RecipePagination
+    pagination_class = Pagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     template = 'shopping_cart.html'
-    filename = "shopping_cart.pdf"
+    filename = 'shopping_cart.pdf'
 
     def get_permissions(self):
         """Права доступа для запросов."""
 
-        if self.action in ('retrieve', 'list'):
-            self.permission_classes = (AllowAny, )
+        if self.action in (
+            'create',
+            'favorite',
+            'shopping_cart',
+            'download_shopping_cart',
+            'delete_favorite',
+            'delete_shopping_cart'
+        ):
+            self.permission_classes = (IsAuthenticated, )
         elif self.action in ('partial_update', 'destroy'):
             self.permission_classes = (IsAuthor,)
-        else:
-            self.permission_classes = (IsAuthenticated, )
         return super().get_permissions()
 
     def get_serializer_class(self):
@@ -56,61 +60,61 @@ class RecipesViewSet(viewsets.ModelViewSet):
         """Получаем queryset рецептов."""
 
         if self.request.user.is_authenticated:
-            return Recipe.objects.annotate(
-                is_favorited=Exists(Favorites.objects.filter(
+            return self.queryset.annotate(
+                is_favorited=Exists(Favorite.objects.filter(
                     user=self.request.user, recipe=OuterRef('id'))),
                 is_in_shopping_cart=Exists(ShoppingCart.objects.filter(
                     user=self.request.user, recipe=OuterRef('id')))
             ).select_related('author').prefetch_related(
                 'tags', 'ingredients')
-        return Recipe.objects.select_related(
+        return self.queryset.select_related(
             'author').prefetch_related('tags', 'ingredients')
 
     @action(detail=True, methods=('POST',))
     def favorite(self, request, pk):
         """Добавление в Избранное."""
 
-        return self.user_lists(request, pk)
+        return self.user_lists(pk)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
         """Удаление из Избранного."""
 
-        return self.del_user_lists(request, Favorites, pk)
+        return self.del_user_lists(Favorite, pk)
 
     @action(detail=True, methods=('POST',))
     def shopping_cart(self, request, pk):
         """Добавление в Список покупок."""
 
-        return self.user_lists(request, pk)
+        return self.user_lists(pk)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
         """Удаление из Списка покупок."""
 
-        return self.del_user_lists(request, ShoppingCart, pk)
+        return self.del_user_lists(ShoppingCart, pk)
 
-    def user_lists(self, request, pk):
+    def user_lists(self, pk):
         """Добавление в списки Избранное и Покупок."""
 
         serializer = self.get_serializer(data={'id': pk})
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def del_user_lists(self, request, model, pk):
+    def del_user_lists(self, model, pk):
         """Удаление из списков Избранное и Покупок."""
 
-        obj = get_object_or_404(
-            model,
-            user=request.user,
+        if not model.objects.filter(
+            user=self.request.user,
             recipe_id=pk
-        )
-        obj.delete()
-        return Response(
-            'Вы удалили рецепт из списка',
-            status=status.HTTP_204_NO_CONTENT
-        )
+        ).exists():
+            return Response(
+                'Этого рецепта нет в списке',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        model.objects.get(user=self.request.user, recipe_id=pk).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=('GET', ))
     def download_shopping_cart(self, request, **kwargs):

@@ -17,7 +17,7 @@ services:
       start_period: 40s
 
   web:
-    image: afoninsb/foodgram_back:0.1.4
+    image: afoninsb/foodgram_back:0.2.0
     restart: unless-stopped
     volumes:
       - media_value:/backend/media/django/

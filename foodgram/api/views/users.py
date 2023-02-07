@@ -1,11 +1,12 @@
 from django.shortcuts import get_object_or_404
+from djoser.serializers import SetPasswordSerializer
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.classesviewset import CreateListRetrieveViewSet
-from api.pagination import RecipePagination
+from api.pagination import Pagination
 from api.serializers.users import (SubscriptionsSerializer,
                                    UserGetSerializer,
                                    UserPostSerializer)
@@ -16,23 +17,23 @@ class UsersViewSet(CreateListRetrieveViewSet):
     """Работа с информацией о пользователях."""
 
     queryset = User.objects.all()
-    pagination_class = RecipePagination
+    pagination_class = Pagination
 
     def get_serializer_class(self):
         """Выбор сериализатора."""
 
         if self.action == 'create':
             return UserPostSerializer
-        if 'subscri' in self.action:
+        if self.action in ('subscribe', 'subscriptions'):
             return SubscriptionsSerializer
+        if self.action == 'set_password':
+            return SetPasswordSerializer
         return UserGetSerializer
 
     def get_permissions(self):
         """Права доступа для запросов."""
 
-        if self.action in ('create', 'list'):
-            self.permission_classes = (AllowAny, )
-        else:
+        if self.action not in ('create', 'list', 'delete_subscribe'):
             self.permission_classes = (IsAuthenticated, )
         return super().get_permissions()
 
@@ -49,9 +50,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
         """Изменение пароля юзера."""
 
         serializer = self.get_serializer(
-            request.user,
-            request.data,
-            partial=True
+            data=request.data,
         )
         serializer.is_valid(raise_exception=True)
         self.request.user.set_password(request.data['new_password'])
@@ -71,16 +70,20 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def delete_subscribe(self, request, pk):
         """Отмена подписки."""
 
-        obj = get_object_or_404(
-            Subscription,
+        author = get_object_or_404(User, id=pk)
+        if not Subscription.objects.filter(
             subscriber=request.user,
-            author_id=pk
-        )
-        obj.delete()
-        return Response(
-            'Вы отписались от пользователя',
-            status=status.HTTP_204_NO_CONTENT
-        )
+            author=author
+        ).exists():
+            return Response(
+                'Вы не были подписаны',
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        Subscription.objects.get(
+            subscriber=request.user,
+            author=author
+        ).delete()
+        return Response
 
     @action(detail=False, methods=('GET',))
     def subscriptions(self, request):

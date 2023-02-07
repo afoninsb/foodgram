@@ -7,9 +7,5 @@ from tags.models import Tag
 class TagAdmin(admin.ModelAdmin):
     """Представление тэгов в админ-панели."""
 
-    list_display = (
-        'name',
-        'slug',
-        'color',
-    )
-    search_fields = ('name', )
+    list_display = ('name', 'slug', 'color')
+    search_fields = ('name',)

@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework.pagination import PageNumberPagination, Response
 
 
-class RecipePagination(PageNumberPagination):
+class Pagination(PageNumberPagination):
     """Пагинатор для вывода списка рецептов."""
 
     page_size = settings.RECIPE_PER_PAGE

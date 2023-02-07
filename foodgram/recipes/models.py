@@ -20,7 +20,7 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиенты',
-        through='RecipeIngredients',
+        through='RecipeIngredient',
     )
     tags = models.ManyToManyField(Tag, verbose_name='Тэги')
     cooking_time = models.PositiveSmallIntegerField(
@@ -31,7 +31,7 @@ class Recipe(models.Model):
     )
     image = models.ImageField(
         verbose_name='Изображение',
-        upload_to=''
+        upload_to='uploads/'
     )
     pub_date = models.DateTimeField(
         verbose_name='Дата публикации',
@@ -48,7 +48,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class RecipeIngredients(models.Model):
+class RecipeIngredient(models.Model):
     """Модель: вхождение ингредиентов в рецепты."""
 
     recipe = models.ForeignKey(
@@ -66,7 +66,8 @@ class RecipeIngredients(models.Model):
     amount = models.PositiveSmallIntegerField(
         verbose_name='Количество',
         validators=(
-            MinValueValidator(1, 'Должно быть целое число, большее 0'), ),
+            MinValueValidator(1, 'Должно быть целое число, большее 0'),
+        ),
         default=1
     )
 
@@ -81,7 +82,7 @@ class RecipeIngredients(models.Model):
         verbose_name_plural = 'Ингредиенты в рецептах'
 
 
-class Favorites(models.Model):
+class Favorite(models.Model):
     """Модель рецептов-фаворитов пользователей."""
 
     user = models.ForeignKey(
@@ -115,20 +116,20 @@ class ShoppingCart(models.Model):
         User,
         verbose_name='Пользователь',
         on_delete=models.CASCADE,
-        related_name='shoppinglist'
+        related_name='shopping_carts'
     )
     recipe = models.ForeignKey(
         Recipe,
         verbose_name='Рецепт',
         on_delete=models.CASCADE,
-        related_name='shoppinglist'
+        related_name='shopping_carts'
     )
 
     class Meta:
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
-                name='user_recipe_shoppinglist'
+                name='user_recipe_shopping_cart'
             ),
         )
         verbose_name = 'Лист покупок'

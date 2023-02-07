@@ -10,9 +10,18 @@ from users.models import Subscription, User
 class UserPostSerializer(UserCreateSerializer):
     """POST Сериализатор модели User."""
 
+    password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ('email', 'username', 'first_name', 'last_name', 'password')
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+        )
 
     def validate_username(self, value):
         """Проверяем, что username не равен me."""

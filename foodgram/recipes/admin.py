@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.db.models import Count
 
-from recipes.models import Favorites, Recipe, RecipeIngredients, ShoppingCart
+from recipes.models import Favorite, Recipe, RecipeIngredient, ShoppingCart
 
 
 class IngredientInline(admin.TabularInline):
@@ -21,24 +22,31 @@ class RecipeAdmin(admin.ModelAdmin):
         'count_favorite',
     )
     list_filter = ('tags', 'name', 'author')
-    search_fields = ('name', )
-    inlines = (IngredientInline, )
+    search_fields = ('name',)
+    inlines = (IngredientInline,)
     readonly_fields = ('count_favorite',)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.annotate(
+            _favorites_count=Count("favorites", distinct=True),
+        ).select_related('author').prefetch_related('tags', 'ingredients')
+        return queryset
 
     def count_favorite(self, obj):
         """Количество добавлений в Избранное"""
 
-        return Favorites.objects.filter(recipe=obj).count()
+        return obj._favorites_count
 
     count_favorite.short_description = "В Избранном (раз)"
 
 
-@admin.register(Favorites)
+@admin.register(Favorite)
 class FavoriteAdmin(admin.ModelAdmin):
     """Представление избранного в админ-панели."""
 
     list_display = ('user', 'recipe')
-    search_fields = ('user', )
+    search_fields = ('user',)
 
 
 @admin.register(ShoppingCart)
@@ -46,12 +54,12 @@ class ShoppingCartAdmin(admin.ModelAdmin):
     """Представление списка покупок в админ-панели."""
 
     list_display = ('user', 'recipe')
-    search_fields = ('user', )
+    search_fields = ('user',)
 
 
-@admin.register(RecipeIngredients)
-class RecipeIngredientsAdmin(admin.ModelAdmin):
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
     """Представление списка покупок в админ-панели."""
 
     list_display = ('recipe', 'ingredient', 'amount')
-    search_fields = ('recipe', )
+    search_fields = ('recipe',)

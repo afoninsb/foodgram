@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models import CheckConstraint, F, Q, UniqueConstraint
 
 
 class User(AbstractUser):
@@ -8,10 +9,12 @@ class User(AbstractUser):
     first_name = models.CharField(verbose_name='Имя', max_length=150)
     last_name = models.CharField(verbose_name='Фамилия', max_length=150)
     email = models.EmailField(verbose_name='email', max_length=254)
+    password = models.CharField(verbose_name='Пароль', max_length=150)
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ('username',)
 
     def __str__(self):
         return self.username
@@ -35,10 +38,14 @@ class Subscription(models.Model):
 
     class Meta:
         constraints = (
-            models.UniqueConstraint(
+            UniqueConstraint(
                 fields=('subscriber', 'author'),
-                name='subscriber_author'
+                name='uniqe_subscriber-author'
             ),
+            CheckConstraint(
+                check=~Q(author=F('subscriber')),
+                name='subscriber_not_author',
+            )
         )
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'

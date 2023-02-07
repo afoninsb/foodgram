@@ -1,7 +1,7 @@
 from django.db.models import Exists, OuterRef
 from django_filters import rest_framework as filters
 
-from recipes.models import Favorites, Recipe, ShoppingCart
+from recipes.models import Favorite, Recipe, ShoppingCart
 
 
 class RecipeFilter(filters.FilterSet):
@@ -18,7 +18,7 @@ class RecipeFilter(filters.FilterSet):
 
     def filter_bool(self, queryset, name, value):
         models = {
-            'is_favorited': Favorites,
+            'is_favorited': Favorite,
             'is_in_shopping_cart': ShoppingCart,
         }
         if self.request.user.is_authenticated and value == 1:
