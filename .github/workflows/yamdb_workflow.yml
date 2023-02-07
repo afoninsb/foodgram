@@ -60,8 +60,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            sudo docker-compose stop
-            sudo docker-compose rm web
             rm .env
             touch .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
@@ -71,7 +69,10 @@ jobs:
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-            sudo docker-compose up -d
+            sudo docker stop $(sudo docker ps -a -q)
+            sudo docker rm $(sudo docker ps -a -q)
+            sudo docker system prune -a
+            sudo docker-compose up --build
 
   send_message:
     runs-on: ubuntu-latest
