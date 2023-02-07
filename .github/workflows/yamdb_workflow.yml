@@ -6,7 +6,7 @@ on:
       - master
 
 env:
-  VERSION: 0.2.0
+  VERSION_BACK: 0.2.0
 
 jobs:
   tests:
@@ -49,7 +49,7 @@ jobs:
           context: ./foodgram/
           file: foodgram/Dockerfile
           push: true
-          tags: afoninsb/foodgram_back:$VERSION
+          tags: afoninsb/foodgram_back:$VERSION_BACK
 
   deploy:
     runs-on: ubuntu-latest
