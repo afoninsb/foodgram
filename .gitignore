@@ -4,7 +4,7 @@
 настройки.txt
 /foodgram/static/
 /foodgram/media/
-
+requirements_copy.txt
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
