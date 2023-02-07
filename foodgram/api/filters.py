@@ -10,7 +10,7 @@ class RecipeFilter(filters.FilterSet):
     is_favorited = filters.BooleanFilter(method='filter_bool')
     is_in_shopping_cart = filters.BooleanFilter(method='filter_bool')
     author = filters.CharFilter()
-    tags = filters.AllValuesMultipleFilter(field_name='tags__slug')
+    tags = filters.Filter(method='filter_tags')
 
     class Meta:
         model = Recipe
@@ -25,3 +25,7 @@ class RecipeFilter(filters.FilterSet):
             return queryset.filter(Exists(models[name].objects.filter(
                 user=self.request.user, recipe=OuterRef('id'))))
         return queryset
+
+    def filter_tags(self, queryset, name, value):
+        tags = self.data.getlist('tags')
+        return queryset.filter(tags__slug__in=tags) if tags else queryset
