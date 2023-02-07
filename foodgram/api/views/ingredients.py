@@ -10,7 +10,6 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IngredientSerializer
 
     def get_queryset(self):
-        queryset = Ingredient.objects.all()
         if name := self.request.GET.get('name'):
-            queryset = queryset.filter(name__startswith=name)
-        return queryset
+            return Ingredient.objects.filter(name__startswith=name)
+        return Ingredient.objects.all()
