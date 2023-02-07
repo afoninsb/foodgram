@@ -7,6 +7,10 @@ On this service, users will be able to publish recipes, subscribe to publication
 
 [Demo](http://158.160.10.11)
 
+## Technology stack
+
+Python 3.10, Django 4.1.5, DjangoRestFramework 3.14.0, Node.js 13.12.0
+
 ## Environment Variables
 
 To run this project, you will need to add the following environment variables to your .env file
