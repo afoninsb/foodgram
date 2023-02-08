@@ -83,7 +83,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
             subscriber=request.user,
             author=author
         ).delete()
-        return Response
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=('GET',))
     def subscriptions(self, request):
