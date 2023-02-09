@@ -12,10 +12,8 @@ from api.filters import RecipeFilter
 from api.pagination import Pagination
 from api.permissions import IsAuthor
 from api.serializers.recipes import (FavoriteSerializer,
-                                     #RecipesFavoriteSerializer,
                                      RecipesPostPatchSerializer,
                                      RecipesSerializer,
-                                     #RecipesShoppingCartSerializer,
                                      ShoppingCartSerializer)
 from recipes.models import Favorite, Recipe, ShoppingCart
 
@@ -23,7 +21,6 @@ from recipes.models import Favorite, Recipe, ShoppingCart
 class RecipesViewSet(viewsets.ModelViewSet):
     """Работа с информацией о рецептах."""
 
-    queryset = Recipe.objects.all()
     http_method_names = ('get', 'post', 'patch', 'delete')
     pagination_class = Pagination
     filter_backends = (DjangoFilterBackend,)
@@ -53,41 +50,38 @@ class RecipesViewSet(viewsets.ModelViewSet):
         if self.action in ('create', 'partial_update'):
             return RecipesPostPatchSerializer
         if self.action == 'favorite':
-            return RecipesFavoriteSerializer
+            return FavoriteSerializer
         if self.action == 'shopping_cart':
-            return RecipesShoppingCartSerializer
+            return ShoppingCartSerializer
         return RecipesSerializer
 
     def get_queryset(self):
         """Получаем queryset рецептов."""
 
-        if self.request.user.is_authenticated:
-            return self.queryset.annotate(
-                is_favorited=Exists(Favorite.objects.filter(
-                    user=self.request.user, recipe=OuterRef('id'))),
-                is_in_shopping_cart=Exists(ShoppingCart.objects.filter(
-                    user=self.request.user, recipe=OuterRef('id')))
-            ).select_related('author').prefetch_related(
-                'tags', 'ingredients')
-        return self.queryset.select_related(
+        queryset = Recipe.objects.all().select_related(
             'author').prefetch_related('tags', 'ingredients')
-
-    # @action(detail=True, methods=('POST',))
-    # def favorite(self, request, pk):
-    #     """Добавление в Избранное."""
-
-    #     return self.user_lists(pk)
-
-    @action(methods=('POST',), detail=True,
-            serializer_class=FavoriteSerializer)
-    def favorite(self, request, pk: int):
-        serializer = FavoriteSerializer(
-            data={'recipe': pk, 'user': self.request.user.id},
-            context={'request': request},
+        return (
+            queryset.annotate(
+                is_favorited=Exists(
+                    Favorite.objects.filter(
+                        user=self.request.user, recipe=OuterRef('id')
+                    )
+                ),
+                is_in_shopping_cart=Exists(
+                    ShoppingCart.objects.filter(
+                        user=self.request.user, recipe=OuterRef('id')
+                    )
+                ),
+            )
+            if self.request.user.is_authenticated
+            else queryset
         )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=('POST',))
+    def favorite(self, request, pk):
+        """Добавление в Избранное."""
+
+        return self.user_lists(pk)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
@@ -95,22 +89,11 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         return self.del_user_lists(Favorite, pk)
 
-    # @action(detail=True, methods=('POST',))
-    # def shopping_cart(self, request, pk):
-    #     """Добавление в Список покупок."""
+    @action(detail=True, methods=('POST',))
+    def shopping_cart(self, request, pk):
+        """Добавление в Список покупок."""
 
-    #     return self.user_lists(pk)
-
-    @action(methods=('POST',), detail=True,
-            serializer_class=ShoppingCartSerializer)
-    def shopping_cart(self, request, pk: int):
-        serializer = ShoppingCartSerializer(
-            data={'recipe': pk, 'user': self.request.user.id},
-            context={'request': request},
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return self.user_lists(pk)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
@@ -121,7 +104,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def user_lists(self, pk):
         """Добавление в списки Избранное и Покупок."""
 
-        serializer = self.get_serializer(data={'id': pk})
+        serializer = self.get_serializer(
+            data={'recipe': pk, 'user': self.request.user.id},
+            context={'request': self.request},
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -129,16 +115,14 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def del_user_lists(self, model, pk):
         """Удаление из списков Избранное и Покупок."""
 
-        if not model.objects.filter(
-            user=self.request.user,
-            recipe_id=pk
-        ).exists():
-            return Response(
-                'Этого рецепта нет в списке',
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        model.objects.get(user=self.request.user, recipe_id=pk).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        obj = model.objects.filter(user=self.request.user, recipe_id=pk)
+        if obj.exists():
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            'Этого рецепта нет в списке',
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=False, methods=('GET', ))
     def download_shopping_cart(self, request, **kwargs):

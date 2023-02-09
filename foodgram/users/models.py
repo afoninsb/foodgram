@@ -40,7 +40,7 @@ class Subscription(models.Model):
         constraints = (
             UniqueConstraint(
                 fields=('subscriber', 'author'),
-                name='uniqe_subscriber-author'
+                name='uniqe_subscriber_author'
             ),
             CheckConstraint(
                 check=~Q(author=F('subscriber')),

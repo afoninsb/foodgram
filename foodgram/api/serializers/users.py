@@ -46,10 +46,6 @@ class UserGetSerializer(serializers.ModelSerializer):
     """GET Сериализатор модели User."""
 
     is_subscribed = serializers.SerializerMethodField()
-    # email = serializers.CharField(read_only=True)
-    # username = serializers.CharField(read_only=True)
-    # first_name = serializers.CharField(read_only=True)
-    # last_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = User

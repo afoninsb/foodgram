@@ -33,7 +33,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def get_permissions(self):
         """Права доступа для запросов."""
 
-        if self.action not in ('create', 'list', 'delete_subscribe'):
+        if self.action not in ('create', 'list'):
             self.permission_classes = (IsAuthenticated, )
         return super().get_permissions()
 
@@ -61,10 +61,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def subscribe(self, request, pk):
         """Подписка."""
 
-        serializer = self.get_serializer(
-            data={'id': pk, 'subscriber': self.request.user.id},
-            context={'request': request},
-        )
+        serializer = self.get_serializer(data={'id': pk})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
