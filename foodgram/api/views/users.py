@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from api.classesviewset import CreateListRetrieveViewSet
 from api.pagination import Pagination
-from api.serializers.users import (SubscriptionsSerializer,
+from api.serializers.users import (SubscriptionsListSerializer, SubscriptionsSerializer,
                                    UserGetSerializer,
                                    UserPostSerializer)
 from users.models import Subscription, User
@@ -87,10 +87,15 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def subscriptions(self, request):
         """Список подписок пользователя."""
 
-        authors = Subscription.objects.filter(subscriber=request.user)
+        authors = Subscription.objects.filter(
+            subscriber=request.user).order_by('id')
         page = self.paginate_queryset(authors)
         if page is not None:
-            serializer = self.get_serializer(page, many=True)
+            serializer = SubscriptionsListSerializer(
+                page, context={'request': self.request}, many=True
+            )
             return self.get_paginated_response(serializer.data)
-        serializer = self.get_serializer(authors, many=True)
+        serializer = SubscriptionsListSerializer(
+            authors, context={'request': self.request}, many=True
+        )
         return Response(serializer.data)

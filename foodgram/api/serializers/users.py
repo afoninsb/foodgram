@@ -126,3 +126,18 @@ class SubscriptionsSerializer(UserGetSerializer):
             recipes = recipes[:int(self.context.get(
                 'request').GET['recipes_limit'])]
         return RecipeUserListSerializer(recipes, many=True).data
+
+
+class SubscriptionsListSerializer(serializers.ModelSerializer):
+    """Сериализатор списка подписок."""
+
+    author = SubscriptionsSerializer(read_only=True)
+    subscriber = serializers.PrimaryKeyRelatedField(read_only=True)
+
+    class Meta:
+        model = Subscription
+        fields = ('author', 'subscriber')
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        return rep['author']
