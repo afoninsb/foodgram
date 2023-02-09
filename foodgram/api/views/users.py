@@ -7,7 +7,8 @@ from rest_framework.response import Response
 
 from api.classesviewset import CreateListRetrieveViewSet
 from api.pagination import Pagination
-from api.serializers.users import (SubscriptionsListSerializer, SubscriptionsSerializer,
+from api.serializers.users import (SubscriptionsListSerializer,
+                                   SubscriptionsSerializer,
                                    UserGetSerializer,
                                    UserPostSerializer)
 from users.models import Subscription, User
