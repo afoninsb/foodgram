@@ -21,6 +21,8 @@ from recipes.models import Favorite, Recipe, ShoppingCart
 class RecipesViewSet(viewsets.ModelViewSet):
     """Работа с информацией о рецептах."""
 
+    queryset = Recipe.objects.all().select_related(
+        'author').prefetch_related('tags', 'ingredients')
     http_method_names = ('get', 'post', 'patch', 'delete')
     pagination_class = Pagination
     filter_backends = (DjangoFilterBackend,)
@@ -58,23 +60,13 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Получаем queryset рецептов."""
 
-        queryset = Recipe.objects.all().select_related(
-            'author').prefetch_related('tags', 'ingredients')
-        return (
-            queryset.annotate(
-                is_favorited=Exists(
-                    Favorite.objects.filter(
-                        user=self.request.user, recipe=OuterRef('id')
-                    )
-                ),
-                is_in_shopping_cart=Exists(
-                    ShoppingCart.objects.filter(
-                        user=self.request.user, recipe=OuterRef('id')
-                    )
-                ),
-            )
-            if self.request.user.is_authenticated
-            else queryset
+        if not self.request.user.is_authenticated:
+            return self.queryset
+        return self.queryset.annotate(
+            is_favorited=Exists(Favorite.objects.filter(
+                user=self.request.user, recipe=OuterRef('id'))),
+            is_in_shopping_cart=Exists(ShoppingCart.objects.filter(
+                user=self.request.user, recipe=OuterRef('id')))
         )
 
     @action(detail=True, methods=('POST',))

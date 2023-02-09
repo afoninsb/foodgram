@@ -6,6 +6,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
+from api.serializers.users import UserGetSerializer
 from ingredients.models import Ingredient
 from recipes.models import Favorite, Recipe, RecipeIngredient, ShoppingCart
 from tags.models import Tag
@@ -55,6 +56,7 @@ class RecipesSerializer(serializers.ModelSerializer):
         source='recipe_ingrdient'
     )
     tags = RecipeTags()
+    author = UserGetSerializer()
     is_favorited = serializers.BooleanField(default=False)
     is_in_shopping_cart = serializers.BooleanField(default=False)
     image = serializers.ImageField(use_url=True)
@@ -69,6 +71,8 @@ class RecipesSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
+        _ = validated_data.pop('is_favorited')
+        _ = validated_data.pop('is_in_shopping_cart')
         ingredients = validated_data.pop('recipe_ingrdient')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(
