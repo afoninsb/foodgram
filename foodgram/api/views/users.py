@@ -61,29 +61,30 @@ class UsersViewSet(CreateListRetrieveViewSet):
     def subscribe(self, request, pk):
         """Подписка."""
 
-        serializer = self.get_serializer(data={'id': pk})
+        serializer = self.get_serializer(
+            data={'id': pk, 'subscriber': self.request.user.id},
+            context={'request': request},
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def delete_subscribe(self, request, pk):
         """Отмена подписки."""
 
         author = get_object_or_404(User, id=pk)
-        if not Subscription.objects.filter(
+        obj = Subscription.objects.filter(
             subscriber=request.user,
             author=author
-        ).exists():
-            return Response(
-                'Вы не были подписаны',
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        Subscription.objects.get(
-            subscriber=request.user,
-            author=author
-        ).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        )
+        if obj.exists():
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            'Вы не были подписаны',
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
     @action(detail=False, methods=('GET',))
     def subscriptions(self, request):

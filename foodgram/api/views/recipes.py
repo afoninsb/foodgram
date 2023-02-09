@@ -11,10 +11,12 @@ from weasyprint import HTML
 from api.filters import RecipeFilter
 from api.pagination import Pagination
 from api.permissions import IsAuthor
-from api.serializers.recipes import (RecipesFavoriteSerializer,
+from api.serializers.recipes import (FavoriteSerializer,
+                                     #RecipesFavoriteSerializer,
                                      RecipesPostPatchSerializer,
                                      RecipesSerializer,
-                                     RecipesShoppingCartSerializer)
+                                     #RecipesShoppingCartSerializer,
+                                     ShoppingCartSerializer)
 from recipes.models import Favorite, Recipe, ShoppingCart
 
 
@@ -70,11 +72,22 @@ class RecipesViewSet(viewsets.ModelViewSet):
         return self.queryset.select_related(
             'author').prefetch_related('tags', 'ingredients')
 
-    @action(detail=True, methods=('POST',))
-    def favorite(self, request, pk):
-        """Добавление в Избранное."""
+    # @action(detail=True, methods=('POST',))
+    # def favorite(self, request, pk):
+    #     """Добавление в Избранное."""
 
-        return self.user_lists(pk)
+    #     return self.user_lists(pk)
+
+    @action(methods=('POST',), detail=True,
+            serializer_class=FavoriteSerializer)
+    def favorite(self, request, pk: int):
+        serializer = FavoriteSerializer(
+            data={'recipe': pk, 'user': self.request.user.id},
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk):
@@ -82,11 +95,22 @@ class RecipesViewSet(viewsets.ModelViewSet):
 
         return self.del_user_lists(Favorite, pk)
 
-    @action(detail=True, methods=('POST',))
-    def shopping_cart(self, request, pk):
-        """Добавление в Список покупок."""
+    # @action(detail=True, methods=('POST',))
+    # def shopping_cart(self, request, pk):
+    #     """Добавление в Список покупок."""
 
-        return self.user_lists(pk)
+    #     return self.user_lists(pk)
+
+    @action(methods=('POST',), detail=True,
+            serializer_class=ShoppingCartSerializer)
+    def shopping_cart(self, request, pk: int):
+        serializer = ShoppingCartSerializer(
+            data={'recipe': pk, 'user': self.request.user.id},
+            context={'request': request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk):
