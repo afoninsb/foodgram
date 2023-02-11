@@ -56,7 +56,7 @@ class RecipesSerializer(serializers.ModelSerializer):
         source='recipe_ingrdient'
     )
     tags = RecipeTags()
-    author = UserGetSerializer()
+    author = UserGetSerializer(read_only=True)
     is_favorited = serializers.BooleanField(default=False)
     is_in_shopping_cart = serializers.BooleanField(default=False)
     image = serializers.ImageField(use_url=True)
