@@ -71,7 +71,7 @@ class UserGetSerializer(serializers.ModelSerializer):
         )
 
 
-class SubscriptionsSerializer(UserGetSerializer):
+class SubscriptionSerializer(UserGetSerializer):
     """Сериализатор списка подписок."""
 
     id = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
@@ -96,13 +96,13 @@ class SubscriptionsSerializer(UserGetSerializer):
         subscriber = self.context['request'].user
         author = data['id']
         if subscriber == author:
-            raise serializers.ValidationError("Нельзя подписаться на себя")
+            raise serializers.ValidationError('Нельзя подписаться на себя')
         if Subscription.objects.filter(
             subscriber=subscriber,
             author=author
         ).exists():
             raise serializers.ValidationError(
-                "Вы уже подписаны на этого пользователя")
+                'Вы уже подписаны на этого пользователя')
         return data
 
     def create(self, validated_data):
@@ -116,22 +116,26 @@ class SubscriptionsSerializer(UserGetSerializer):
     def get_recipes_count(self, obj):
         """Количество рецептов."""
 
-        return obj.recipes.all().count()
+        return obj.recipes.count()
 
     def get_recipes(self, obj):
         """Рецепты."""
 
         recipes = obj.recipes.all()
-        if self.context.get('request').GET.get('recipes_limit'):
-            recipes = recipes[:int(self.context.get(
-                'request').GET['recipes_limit'])]
-        return RecipeUserListSerializer(recipes, many=True).data
+        limit = self.context.get('request').GET.get('recipes_limit', '')
+        if limit.isdigit():
+            recipes = recipes[:int(limit)]
+        return RecipeUserListSerializer(
+            recipes,
+            context={'request': self.context['request']},
+            many=True
+        ).data
 
 
-class SubscriptionsListSerializer(serializers.ModelSerializer):
+class SubscriptionListSerializer(serializers.ModelSerializer):
     """Сериализатор списка подписок."""
 
-    author = SubscriptionsSerializer(read_only=True)
+    author = SubscriptionSerializer(read_only=True)
     subscriber = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:

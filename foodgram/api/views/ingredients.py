@@ -7,9 +7,10 @@ from ingredients.models import Ingredient
 class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     """Работа с информацией об ингредиентах."""
 
+    queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
 
     def get_queryset(self):
         if name := self.request.GET.get('name'):
-            return Ingredient.objects.filter(name__startswith=name)
-        return Ingredient.objects.all()
+            return self.queryset.filter(name__startswith=name)
+        return self.queryset

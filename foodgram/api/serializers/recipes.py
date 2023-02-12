@@ -71,8 +71,8 @@ class RecipesSerializer(serializers.ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        _ = validated_data.pop('is_favorited')
-        _ = validated_data.pop('is_in_shopping_cart')
+        validated_data.pop('is_favorited')
+        validated_data.pop('is_in_shopping_cart')
         ingredients = validated_data.pop('recipe_ingrdient')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(

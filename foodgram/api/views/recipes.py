@@ -21,7 +21,7 @@ from recipes.models import Favorite, Recipe, ShoppingCart
 class RecipesViewSet(viewsets.ModelViewSet):
     """Работа с информацией о рецептах."""
 
-    queryset = Recipe.objects.all().select_related(
+    queryset = Recipe.objects.select_related(
         'author').prefetch_related('tags', 'ingredients')
     http_method_names = ('get', 'post', 'patch', 'delete')
     pagination_class = Pagination

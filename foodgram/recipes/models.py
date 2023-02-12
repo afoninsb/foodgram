@@ -68,7 +68,6 @@ class RecipeIngredient(models.Model):
         validators=(
             MinValueValidator(1, 'Должно быть целое число, большее 0'),
         ),
-        default=1
     )
 
     class Meta:

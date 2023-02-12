@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-from djoser.serializers import SetPasswordSerializer
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -7,8 +6,8 @@ from rest_framework.response import Response
 
 from api.classesviewset import CreateListRetrieveViewSet
 from api.pagination import Pagination
-from api.serializers.users import (SubscriptionsListSerializer,
-                                   SubscriptionsSerializer,
+from api.serializers.users import (SubscriptionListSerializer,
+                                   SubscriptionSerializer,
                                    UserGetSerializer,
                                    UserPostSerializer)
 from users.models import Subscription, User
@@ -26,9 +25,7 @@ class UsersViewSet(CreateListRetrieveViewSet):
         if self.action == 'create':
             return UserPostSerializer
         if self.action in ('subscribe', 'subscriptions'):
-            return SubscriptionsSerializer
-        if self.action == 'set_password':
-            return SetPasswordSerializer
+            return SubscriptionSerializer
         return UserGetSerializer
 
     def get_permissions(self):
@@ -38,31 +35,14 @@ class UsersViewSet(CreateListRetrieveViewSet):
             self.permission_classes = (IsAuthenticated, )
         return super().get_permissions()
 
-    @action(detail=False, methods=('GET',))
-    def me(self, request):
-        """Информация юзера о себе."""
-
-        instance = request.user
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=('POST',))
-    def set_password(self, request):
-        """Изменение пароля юзера."""
-
-        serializer = self.get_serializer(
-            data=request.data,
-        )
-        serializer.is_valid(raise_exception=True)
-        self.request.user.set_password(request.data['new_password'])
-        self.request.user.save()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
     @action(detail=True, methods=('POST',))
     def subscribe(self, request, pk):
         """Подписка."""
 
-        serializer = self.get_serializer(data={'id': pk})
+        serializer = self.get_serializer(
+            data={'id': pk},
+            context={'request': self.request}
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -90,13 +70,8 @@ class UsersViewSet(CreateListRetrieveViewSet):
 
         authors = Subscription.objects.filter(
             subscriber=request.user).order_by('id')
-        page = self.paginate_queryset(authors)
-        if page is not None:
-            serializer = SubscriptionsListSerializer(
-                page, context={'request': self.request}, many=True
-            )
-            return self.get_paginated_response(serializer.data)
-        serializer = SubscriptionsListSerializer(
-            authors, context={'request': self.request}, many=True
+        queryset = self.paginate_queryset(authors)
+        serializer = SubscriptionListSerializer(
+            queryset, context={'request': self.request}, many=True
         )
-        return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
