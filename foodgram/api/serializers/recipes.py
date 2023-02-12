@@ -25,7 +25,9 @@ class Base64ImageField(serializers.ImageField):
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
     """Сериализатор связи Recipe-Ingredients."""
 
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.values_list('id', flat=True)
+    )
     name = serializers.CharField(source='ingredient.name', read_only=True)
     measurement_unit = serializers.CharField(
         source='ingredient.measurement_unit', read_only=True
@@ -34,6 +36,10 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = ('id', 'name', 'measurement_unit', 'amount')
+
+    def to_representation(self, instance):
+        instance.id = instance.ingredient_id
+        return super().to_representation(instance)
 
 
 class RecipeTags(serializers.Field):
@@ -98,7 +104,7 @@ class RecipesSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create([
             RecipeIngredient(
                 recipe=recipe,
-                ingredient=ingredient['id'],
+                ingredient_id=ingredient['id'],
                 amount=ingredient['amount'],
             )
             for ingredient in ingredients
@@ -154,16 +160,16 @@ class FavoriteSerializer(serializers.ModelSerializer):
         model = Favorite
         fields = ('user', 'recipe')
 
-    def validate(self, attrs):
-        recipe = attrs['recipe']
+    def validate(self, data):
+        recipe = data['recipe']
         if Favorite.objects.filter(
-                user=attrs['user'],
+                user=data['user'],
                 recipe=recipe,
         ).exists():
             raise serializers.ValidationError(
                 f'Рецепт `{recipe.name}` уже в избранных'
             )
-        return attrs
+        return data
 
     def to_representation(self, instance: Favorite):
         return RecipeListsSerializer(
