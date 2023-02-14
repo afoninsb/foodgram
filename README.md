@@ -1,11 +1,17 @@
 # FoodGram
 
-FoodGram - "Product Assistant"
-On this service, users will be able to publish recipes, subscribe to publications of other users, add their favorite recipes to the "Favorites" list, and before going to the store, download a summary list of products needed to prepare one or more selected dishes.
+FoodGram - "Food Assistant"
+Food Assistant is a site where you can publish your own recipes, add other people's recipes to your favorites, follow other authors, and create a shopping list for given dishes.
+
+Here is what was done during the work on the project:
+ - configured the interaction of the Python application with external API services;
+ - created its own API service based on the Django project;
+ - connected SPA to the Django backend via API;
+ - images are created and Docker containers are running;
+ - multi-container applications created, deployed and launched on the server;
+ - the basics of DevOps, including CI & CD, are fixed in practice.
 
 ![](https://github.com/afoninsb/foodgram-project-react/actions/workflows/yamdb_workflow.yml/badge.svg)
-
-[Demo](http://158.160.10.11)
 
 ## Technology stack
 
