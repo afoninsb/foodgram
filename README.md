@@ -15,7 +15,7 @@ Here is what was done during the work on the project:
 
 ## Technology stack
 
-Python 3.10, Django 4.1.5, DjangoRestFramework 3.14.0, Node.js 13.12.0
+Python 3.10, Django 4.1.5, DjangoRestFramework 3.14.0, React.js
 
 ## Environment Variables
 
